@@ -1,0 +1,20 @@
+// Hamburger menu button — opens the sidebar. Place in any screen's header.
+import React from 'react';
+import { Pressable, StyleSheet } from 'react-native';
+import { Menu } from '../icons';
+import { useSidebar } from '../lib/sidebarContext';
+import { colors } from '../theme';
+
+export default function MenuButton({ color = colors.ink }: { color?: string }) {
+  const { openSidebar } = useSidebar();
+  return (
+    // Icon-only: without a label TalkBack read this as an unlabeled button.
+    <Pressable onPress={openSidebar} style={s.btn} hitSlop={8} accessibilityRole="button" accessibilityLabel="Open menu">
+      <Menu size={22} color={color} />
+    </Pressable>
+  );
+}
+
+const s = StyleSheet.create({
+  btn: { padding: 4, marginRight: 4 },
+});

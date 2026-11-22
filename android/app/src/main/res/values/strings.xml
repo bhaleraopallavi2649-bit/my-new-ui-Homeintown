@@ -1,0 +1,5 @@
+<resources>
+  <string name="app_name">HomeInTown</string>
+  <string name="expo_system_ui_user_interface_style" translatable="false">light</string>
+  <string name="google_maps_api_key" translatable="false">AIzaSyAzw6zVDMG0KFuWIeQtg6mlasy-hghuZM4</string>
+</resources>
