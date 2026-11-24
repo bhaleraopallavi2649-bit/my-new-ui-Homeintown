@@ -278,7 +278,7 @@ export default function MyCardScreen() {
                   style={{ alignItems: 'center', gap: spacing.xs }}
                 >
                   <View style={[s.miniWrap, selected && s.miniWrapSelected]}>
-                    <VisitingCard card={merged} template={t.key} width={miniW - 4} />
+                    <VisitingCard card={merged} template={t.key} qrValue={published && url ? url : undefined} width={miniW - 4} />
                   </View>
                   <Text style={[s.miniLabel, selected && { color: colors.brand }]}>{t.label}</Text>
                 </Pressable>

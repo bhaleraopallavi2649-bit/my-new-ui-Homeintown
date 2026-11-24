@@ -23,6 +23,7 @@ import type { UnitDayGroup } from '../../lib/groupChat/unitSummaries';
 import Tag from './Tag';
 import CardActions from './CardActions';
 import GroupMatchCard from './GroupMatchCard';
+import SharedVisitingCard, { parseVisitingCardText } from './SharedVisitingCard';
 
 // ── Message bubble ──
 // Memoised: without this, every keystroke in the composer (whose state lives in
@@ -861,6 +862,21 @@ const MessageBubble = React.memo(function MessageBubble({
         </View>
       </View>
     );
+  }
+
+  // Shared My Card: compact green card instead of a plain text bubble.
+  if (msg.messageType === 'text') {
+    const sharedCard = parseVisitingCardText(msg.content);
+    if (sharedCard) {
+      return (
+        <SharedVisitingCard
+          card={sharedCard}
+          isMe={isMe}
+          onLongPress={canDelete ? () => onDeleteMessage(msg) : undefined}
+          hint={canDelete ? 'Long press to delete' : undefined}
+        />
+      );
+    }
   }
 
   // text — long-press to delete, matching the image/file pattern already above.

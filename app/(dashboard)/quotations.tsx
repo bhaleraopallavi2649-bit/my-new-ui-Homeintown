@@ -24,6 +24,9 @@ import MenuButton from '../../src/components/MenuButton';
 import { useToast } from '../../src/components/Toast';
 import { colors, radius, spacing } from '../../src/theme';
 
+// Green theme (matches Lead Match / My Group).
+const QGREEN = '#1F4D3A';
+
 const NOT_LIVE = 'Quotation feature abhi server pe live nahi hai';
 
 const FILTERS: { key: QuotationStatusFilter | undefined; label: string }[] = [
@@ -221,7 +224,7 @@ export default function QuotationsScreen() {
   };
 
   const renderDetail = () => {
-    if (detailLoading || !full) return <View style={s.center}><ActivityIndicator color={colors.brand} /></View>;
+    if (detailLoading || !full) return <View style={s.center}><ActivityIndicator color={QGREEN} /></View>;
     const unit = unitLine(full.unit);
     // Nothing can change a cancelled quotation (server answers 409).
     const actions = full.status === 'cancelled' ? [] : ACTIONS.filter(a => a.status !== full.status);
@@ -266,7 +269,7 @@ export default function QuotationsScreen() {
                 accessibilityRole="button"
               >
                 {busy === a.status
-                  ? <ActivityIndicator size="small" color={colors.brand} />
+                  ? <ActivityIndicator size="small" color={QGREEN} />
                   : <Text style={[s.actionText, a.status === 'cancelled' && { color: colors.redText }]}>{a.label}</Text>}
               </Pressable>
             ))}
@@ -304,20 +307,20 @@ export default function QuotationsScreen() {
       </ScrollView>
 
       {loading ? (
-        <View style={s.center}><ActivityIndicator color={colors.brand} /></View>
+        <View style={s.center}><ActivityIndicator color={QGREEN} /></View>
       ) : (
         <FlatList
           data={items}
           keyExtractor={q => q.id}
           renderItem={renderRow}
           contentContainerStyle={s.list}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadFirst(filter, 'refresh')} colors={[colors.brand]} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadFirst(filter, 'refresh')} colors={[QGREEN]} />}
           onEndReached={loadMore}
           onEndReachedThreshold={0.4}
-          ListFooterComponent={loadingMore ? <ActivityIndicator color={colors.brand} style={{ marginVertical: spacing.lg }} /> : null}
+          ListFooterComponent={loadingMore ? <ActivityIndicator color={QGREEN} style={{ marginVertical: spacing.lg }} /> : null}
           ListEmptyComponent={error ? (
             <EmptyState
-              icon={<FileText size={28} color={colors.brand} />}
+              icon={<FileText size={28} color={QGREEN} />}
               title={error}
               subtitle="Thodi der baad dobara try karo."
               actionLabel="Retry"
@@ -325,7 +328,7 @@ export default function QuotationsScreen() {
             />
           ) : (
             <EmptyState
-              icon={<FileText size={28} color={colors.brand} />}
+              icon={<FileText size={28} color={QGREEN} />}
               title={filter ? `Koi ${filterLabel} quotation nahi` : 'Abhi koi quotation nahi'}
               subtitle="Project chuno, details bharo aur PDF WhatsApp pe bhejo."
               actionLabel="Nayi quotation"
@@ -356,25 +359,26 @@ export default function QuotationsScreen() {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.cream },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: 14, backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: colors.line },
-  title: { flex: 1, fontSize: 21, fontWeight: '800', color: colors.ink },
-  addBtn: { width: 34, height: 34, borderRadius: radius.md, backgroundColor: colors.brand, alignItems: 'center', justifyContent: 'center' },
+  title: { flex: 1, fontSize: 21, fontWeight: '800', color: QGREEN },
+  addBtn: { width: 34, height: 34, borderRadius: radius.md, backgroundColor: QGREEN, alignItems: 'center', justifyContent: 'center' },
   center: { paddingVertical: 60, alignItems: 'center' },
 
   chipsBar: { flexGrow: 0, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.line },
   chips: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, gap: spacing.sm },
   chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.full, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.white },
-  chipSelected: { backgroundColor: colors.brand, borderColor: colors.brand },
+  chipSelected: { backgroundColor: QGREEN, borderColor: QGREEN },
   chipText: { fontSize: 12, fontWeight: '600', color: colors.ink },
   chipTextSelected: { color: colors.white },
 
   list: { padding: spacing.lg, gap: spacing.md, flexGrow: 1 },
-  row: { backgroundColor: colors.white, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, padding: spacing.md, gap: 4 },
+  // No box around each created quotation: plain row with a hairline divider.
+  row: { backgroundColor: 'transparent', paddingVertical: spacing.md, paddingHorizontal: 2, gap: 4, borderBottomWidth: 1, borderBottomColor: 'rgba(31,77,58,0.12)' },
   rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
-  number: { fontSize: 13, fontWeight: '800', color: colors.ink },
-  project: { fontSize: 14, fontWeight: '700', color: colors.ink },
+  number: { fontSize: 13, fontWeight: '800', color: QGREEN },
+  project: { fontSize: 14, fontWeight: '700', color: QGREEN },
   muted: { fontSize: 12, color: colors.muted2 },
   hint: { fontSize: 11, color: colors.muted },
-  total: { fontSize: 15, fontWeight: '800', color: colors.brand },
+  total: { fontSize: 15, fontWeight: '800', color: QGREEN },
   pill: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: radius.full, borderWidth: 1 },
   pillText: { fontSize: 10, fontWeight: '700' },
 
@@ -383,14 +387,14 @@ const s = StyleSheet.create({
   sheetHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.lg, borderBottomWidth: 1, borderBottomColor: colors.line, backgroundColor: colors.white, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl },
   sheetBody: { padding: spacing.lg, gap: spacing.md },
   box: { backgroundColor: colors.white, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, padding: spacing.md, gap: spacing.sm },
-  sectionLabel: { fontSize: 10, fontWeight: '800', color: colors.muted2, textTransform: 'uppercase', letterSpacing: 0.8 },
+  sectionLabel: { fontSize: 10, fontWeight: '800', color: QGREEN, textTransform: 'uppercase', letterSpacing: 0.8 },
   body: { fontSize: 12, color: colors.ink, lineHeight: 18 },
 
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, backgroundColor: colors.brand, paddingVertical: 14, borderRadius: radius.md },
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, backgroundColor: QGREEN, paddingVertical: 14, borderRadius: radius.md },
   primaryText: { color: colors.white, fontSize: 13, fontWeight: '800' },
   actions: { flexDirection: 'row', gap: spacing.sm },
-  actionBtn: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 11, borderRadius: radius.md, borderWidth: 1, borderColor: colors.brand, backgroundColor: colors.white },
+  actionBtn: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 11, borderRadius: radius.md, borderWidth: 1, borderColor: QGREEN, backgroundColor: colors.white },
   actionDanger: { borderColor: colors.redBorder },
-  actionText: { fontSize: 12, fontWeight: '700', color: colors.brand },
+  actionText: { fontSize: 12, fontWeight: '700', color: QGREEN },
   dim: { opacity: 0.4 },
 });

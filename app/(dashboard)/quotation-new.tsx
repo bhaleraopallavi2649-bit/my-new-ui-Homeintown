@@ -36,6 +36,9 @@ import EmptyState from '../../src/components/EmptyState';
 import { useToast } from '../../src/components/Toast';
 import { colors, radius, spacing, unitColors } from '../../src/theme';
 
+// Green theme (matches Lead Match / My Group).
+const QGREEN = '#1F4D3A';
+
 // Same roles that see the Projects sidebar entry: they also get their own
 // project list (drafts included) on top of the public one.
 const OWN_LIST_ROLES = ['admin', 'builder', 'captain', 'agent'];
@@ -460,21 +463,11 @@ export default function QuotationNewScreen() {
   };
 
   // ── Render helpers ──
-  const stepHeader = (
-    <View style={s.steps}>
-      {STEPS.map((label, i) => (
-        <Text key={label} style={[s.stepText, step === i + 1 && s.stepActive]}>
-          {i > 0 ? ' · ' : ''}{i + 1} {label}
-        </Text>
-      ))}
-    </View>
-  );
-
   const renderProjectList = () => {
-    if (pLoading || projects === null) return <View style={s.center}><ActivityIndicator color={colors.brand} /></View>;
+    if (pLoading || projects === null) return <View style={s.center}><ActivityIndicator color={QGREEN} /></View>;
     if (pError) {
       return (
-        <EmptyState icon={<Building2 size={28} color={colors.brand} />} title={pError} actionLabel="Retry" onAction={loadProjects} />
+        <EmptyState icon={<Building2 size={28} color={QGREEN} />} title={pError} actionLabel="Retry" onAction={loadProjects} />
       );
     }
     const q = search.trim().toLowerCase();
@@ -488,16 +481,16 @@ export default function QuotationNewScreen() {
           <TextInput
             value={search}
             onChangeText={setSearch}
-            placeholder="Project dhundo"
+            placeholder="Search project"
             placeholderTextColor={colors.muted}
             style={s.searchInput}
           />
         </View>
         {list.length === 0 ? (
-          <EmptyState icon={<Building2 size={28} color={colors.brand} />} title="Koi project nahi mila" />
+          <EmptyState icon={<Building2 size={28} color={QGREEN} />} title="Koi project nahi mila" />
         ) : list.map(p => (
           <Pressable key={p.id} style={s.projectRow} onPress={() => selectProject(p)} accessibilityRole="button">
-            <Building2 size={18} color={colors.brand} />
+            <Building2 size={18} color={QGREEN} />
             <View style={{ flex: 1 }}>
               <Text style={s.projectName} numberOfLines={1}>{p.name}</Text>
               {!!(p.location || p.city) && (
@@ -512,7 +505,7 @@ export default function QuotationNewScreen() {
   };
 
   const renderUnitPicker = () => {
-    if (!r) return <View style={s.center}><ActivityIndicator color={colors.brand} /></View>;
+    if (!r) return <View style={s.center}><ActivityIndicator color={QGREEN} /></View>;
     const towers = new Map<string, QuotationFlat[]>();
     for (const f of r.flats) {
       const k = f.tower || '';
@@ -536,7 +529,7 @@ export default function QuotationNewScreen() {
           <View style={s.box}>
             <View style={s.rowBetween}>
               <Text style={s.sectionLabel}>Flat chuno</Text>
-              {rLoading && <ActivityIndicator size="small" color={colors.brand} />}
+              {rLoading && <ActivityIndicator size="small" color={QGREEN} />}
             </View>
             {[...towers.entries()].map(([tower, flats]) => (
               <View key={tower || '-'} style={{ gap: spacing.sm }}>
@@ -570,7 +563,7 @@ export default function QuotationNewScreen() {
           <View style={s.box}>
             <View style={s.rowBetween}>
               <Text style={s.sectionLabel}>BHK chuno</Text>
-              {rLoading && <ActivityIndicator size="small" color={colors.brand} />}
+              {rLoading && <ActivityIndicator size="small" color={QGREEN} />}
             </View>
             {r.project.bhkOptions.length > 0 ? (
               <View style={s.chips}>
@@ -670,7 +663,7 @@ export default function QuotationNewScreen() {
             <Switch
               value={saveSwitch}
               onValueChange={setSaveSwitch}
-              trackColor={{ false: colors.line, true: colors.brand }}
+              trackColor={{ false: colors.line, true: QGREEN }}
               thumbColor={colors.white}
             />
           </View>
@@ -703,7 +696,7 @@ export default function QuotationNewScreen() {
                 <>
                   <Text style={s.muted}>Request bhej di ✓ — builder details bharega to notification aayega</Text>
                   <Pressable style={s.outlineBtn} onPress={() => setChoice('self')} accessibilityRole="button">
-                    <Pencil size={15} color={colors.brand} />
+                    <Pencil size={15} color={QGREEN} />
                     <Text style={s.outlineText}>Tab tak khud bharo</Text>
                   </Pressable>
                 </>
@@ -711,7 +704,7 @@ export default function QuotationNewScreen() {
                 <>
                   <Text style={s.muted}>Builder ko notification jayega ki ye details bhar de.</Text>
                   <Pressable style={[s.outlineBtn, requestBusy && s.dim]} onPress={onRequestBuilder} disabled={requestBusy} accessibilityRole="button">
-                    {requestBusy ? <ActivityIndicator size="small" color={colors.brand} /> : <Send size={15} color={colors.brand} />}
+                    {requestBusy ? <ActivityIndicator size="small" color={QGREEN} /> : <Send size={15} color={QGREEN} />}
                     <Text style={s.outlineText}>Request bhejo</Text>
                   </Pressable>
                 </>
@@ -755,7 +748,7 @@ export default function QuotationNewScreen() {
             <Switch
               value={applyPlc}
               onValueChange={setApplyPlc}
-              trackColor={{ false: colors.line, true: colors.brand }}
+              trackColor={{ false: colors.line, true: QGREEN }}
               thumbColor={colors.white}
             />
           </View>
@@ -801,7 +794,7 @@ export default function QuotationNewScreen() {
             <Text style={s.primaryText}>WhatsApp pe PDF bhejo</Text>
           </Pressable>
           <Pressable style={s.outlineBtn} onPress={() => router.replace('/(dashboard)/quotations' as any)} accessibilityRole="button">
-            <FileText size={15} color={colors.brand} />
+            <FileText size={15} color={QGREEN} />
             <Text style={s.outlineText}>Meri Quotations</Text>
           </Pressable>
           <Pressable style={s.outlineBtn} onPress={onNewQuotation} accessibilityRole="button">
@@ -833,9 +826,8 @@ export default function QuotationNewScreen() {
         <Pressable onPress={goBack} hitSlop={8} accessibilityRole="button" accessibilityLabel="Back">
           <ChevronLeft size={22} color={colors.ink} />
         </Pressable>
-        <Text style={s.title}>Nayi Quotation</Text>
+        <Text style={s.title}>New Quotation</Text>
       </View>
-      {stepHeader}
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
         {step === 1 && (projectId ? renderUnitPicker() : renderProjectList())}
         {step === 2 && renderStep2()}
@@ -860,12 +852,12 @@ export default function QuotationNewScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.cream },
+  root: { flex: 1, backgroundColor: '#EAF8EE' },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: 14, backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: colors.line },
-  title: { fontSize: 21, fontWeight: '800', color: colors.ink },
+  title: { fontSize: 21, fontWeight: '800', color: QGREEN },
   steps: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.line },
   stepText: { fontSize: 12, fontWeight: '600', color: colors.muted },
-  stepActive: { color: colors.brand, fontWeight: '800' },
+  stepActive: { color: QGREEN, fontWeight: '800' },
   scroll: { padding: spacing.lg, paddingBottom: 40, gap: spacing.md },
   center: { paddingVertical: 60, alignItems: 'center' },
 
@@ -874,43 +866,44 @@ const s = StyleSheet.create({
   okText: { fontSize: 13, fontWeight: '700', color: colors.greenText },
   warnBox: { backgroundColor: colors.amberBg, borderColor: colors.amberBorder },
   warnText: { fontSize: 12, fontWeight: '600', color: colors.amberText },
-  sectionLabel: { fontSize: 10, fontWeight: '800', color: colors.muted2, textTransform: 'uppercase', letterSpacing: 0.8 },
+  sectionLabel: { fontSize: 10, fontWeight: '800', color: QGREEN, textTransform: 'uppercase', letterSpacing: 0.8 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   muted: { fontSize: 12, color: colors.muted2 },
   hint: { fontSize: 11, color: colors.muted },
-  link: { fontSize: 12, fontWeight: '700', color: colors.brand },
+  link: { fontSize: 12, fontWeight: '700', color: QGREEN },
 
   searchBox: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.white, borderRadius: radius.md, borderWidth: 1, borderColor: colors.line, paddingHorizontal: spacing.md },
   searchInput: { flex: 1, paddingVertical: 10, fontSize: 13, color: colors.ink },
-  projectRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.white, borderRadius: radius.md, borderWidth: 1, borderColor: colors.line, padding: spacing.md },
-  projectName: { fontSize: 15, fontWeight: '800', color: colors.ink },
+  // No box around each project: plain row with a hairline divider.
+  projectRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: 'transparent', paddingVertical: spacing.md, paddingHorizontal: 2, borderBottomWidth: 1, borderBottomColor: 'rgba(31,77,58,0.12)' },
+  projectName: { fontSize: 15, fontWeight: '800', color: QGREEN },
   draftPill: { fontSize: 10, fontWeight: '700', color: colors.slateText, backgroundColor: colors.slateBg, borderWidth: 1, borderColor: colors.slateBorder, borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 2, overflow: 'hidden' },
 
   towerLabel: { fontSize: 12, fontWeight: '700', color: colors.ink },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   chip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: radius.full, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.white },
   flatChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: radius.full, borderWidth: 1, backgroundColor: colors.white },
-  chipSelected: { backgroundColor: colors.brand, borderColor: colors.brand },
+  chipSelected: { backgroundColor: QGREEN, borderColor: QGREEN },
   chipText: { fontSize: 12, fontWeight: '600', color: colors.ink },
   chipTextSelected: { color: colors.white },
   dot: { width: 8, height: 8, borderRadius: 4 },
   dim: { opacity: 0.4 },
 
   fieldWrap: { gap: 5 },
-  fieldLabel: { fontSize: 12, fontWeight: '600', color: colors.ink },
+  fieldLabel: { fontSize: 12, fontWeight: '700', color: QGREEN },
   input: { borderWidth: 1, borderColor: colors.line, borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 11, fontSize: 13, color: colors.ink, backgroundColor: colors.cream },
   inputMulti: { minHeight: 80, textAlignVertical: 'top' },
   inputError: { borderColor: colors.red },
   errorText: { fontSize: 11, color: colors.redText },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
 
-  choiceTitle: { fontSize: 14, fontWeight: '800', color: colors.ink },
+  choiceTitle: { fontSize: 14, fontWeight: '800', color: QGREEN },
   summaryLine: { fontSize: 13, fontWeight: '700', color: colors.ink },
-  grand: { fontSize: 20, fontWeight: '800', color: colors.brand },
+  grand: { fontSize: 20, fontWeight: '800', color: QGREEN },
 
   footer: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, backgroundColor: colors.white, borderTopWidth: 1, borderTopColor: colors.line },
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, backgroundColor: colors.brand, paddingVertical: 14, borderRadius: radius.md },
+  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, backgroundColor: QGREEN, paddingVertical: 14, borderRadius: radius.md },
   primaryText: { color: colors.white, fontSize: 13, fontWeight: '800' },
-  outlineBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 11, borderRadius: radius.md, borderWidth: 1, borderColor: colors.brand, backgroundColor: colors.white },
-  outlineText: { fontSize: 12, fontWeight: '700', color: colors.brand },
+  outlineBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 11, borderRadius: radius.md, borderWidth: 1, borderColor: QGREEN, backgroundColor: colors.white },
+  outlineText: { fontSize: 12, fontWeight: '700', color: QGREEN },
 });

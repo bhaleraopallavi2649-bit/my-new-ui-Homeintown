@@ -33,6 +33,7 @@ import {
 import { cardApi, humanLeadsApi, HumanLead, ApiError, groupChatApi, shareApi, mediaApi, leadMatchingApi, invalidateLeadsCache, projectsApiExtended, fetchPublicProjectsRaw, GroupRoom, GroupMessage, InventoryCard, OwnerPortfolioProject, Project, GroupMedia, GroupLink } from '../lib/api';
 import { ShareModal } from './ShareActions';
 import { publicCardUrl } from '../lib/cardImage';
+import { buildVisitingCardText } from './groupChat/SharedVisitingCard';
 import { useSiteVisitTracking, DWELL_MS } from '../hooks/useSiteVisitTracking';
 import AiAssistant, { AiAssistantApi, AiPostDraft, InventoryMatchCard, MatchCard, MatchResultCard, aiOwnsInput } from './AiAssistant';
 import { postedListStorage, disappearStorage } from '../lib/storage';
@@ -1495,13 +1496,21 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
         router.push('/(dashboard)/my-card' as any);
         return;
       }
-      const lines = [
-        '\uD83D\uDCC7 ' + (card.name || ''),
-        [card.designation, card.companyName].filter(Boolean).join(', '),
-        card.phone ? '\uD83D\uDCDE ' + card.phone : '',
-        publicCardUrl(card.code),
-      ].filter(Boolean);
-      const res = await groupChatApi.postMessage(roomId, { messageType: 'text', content: lines.join('\n') });
+      // One prefixed line per field; MessageBubble renders it as a compact card
+      // (see groupChat/SharedVisitingCard). Empty fields are simply omitted.
+      const addr = card.address || ({} as any);
+      const content = buildVisitingCardText({
+        name: card.name || '',
+        designation: card.designation || '',
+        company: card.companyName || '',
+        phone: card.phone || '',
+        address: [addr.line, addr.city, addr.state, addr.pinCode].filter(Boolean).join(', '),
+        website: card.website || '',
+        url: publicCardUrl(card.code),
+        photoUrl: card.logoUrl || card.photoUrl || '',
+        template: card.template,
+      });
+      const res = await groupChatApi.postMessage(roomId, { messageType: 'text', content });
       if (res?.message) appendMessage(normalizeMsg(res.message, roomId));
     } catch (e) {
       toast.show(sendFailureMessage(e), 'error');
@@ -1533,10 +1542,23 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
     } finally { setVisitLeadsLoading(false); }
   };
 
-  const pickVisitLead = (lead: HumanLead) => {
+  const pickVisitLead = async (lead: HumanLead) => {
     setShowVisitPicker(false);
-    const projectName = String((activeRoom?.project as any)?.projectName || lead.project || 'Property');
-    void startVisit({ leadId: lead.id, leadName: lead.name, projectId: drawerProjectId, projectName });
+    if (!activeRoom) return;
+    const roomId = activeRoom.id;
+    const projectName = String((activeRoom.project as any)?.projectName || lead.project || 'Property');
+    const started = await startVisit({ leadId: lead.id, leadName: lead.name, projectId: drawerProjectId, projectName });
+    if (!started) return; // the hook already toasted the reason
+    toast.show(`Site visit shuru: ${lead.name}`, 'success');
+    // Tell the group the visit has begun. Arrival and completion cards are posted
+    // by the server once the phone reaches the site.
+    try {
+      const res = await groupChatApi.postMessage(roomId, {
+        messageType: 'text',
+        content: `\uD83D\uDCCD Site visit shuru: ${lead.name} \u2192 ${projectName}`,
+      });
+      if (res?.message) appendMessage(normalizeMsg(res.message, roomId));
+    } catch { /* the visit is tracked either way */ }
   };
 
   const visitStatusText = (): string => {
@@ -4852,7 +4874,7 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
             </>)}
             <Pressable onPress={sendVisitingCard} disabled={uploading} style={s.attachOpt}>
               <View style={[s.attachIcon, { backgroundColor: '#FFF1E6' }]}><CreditCard size={17} color={colors.brand} /></View>
-              <Text style={s.attachLabel}>Visiting Card bhejo</Text>
+              <Text style={s.attachLabel}>Visiting Card</Text>
             </Pressable>
             <Pressable onPress={openSiteVisit} disabled={uploading} style={s.attachOpt}>
               <View style={[s.attachIcon, { backgroundColor: '#ECFEFF' }]}><MapPin size={17} color="#0E7490" /></View>
@@ -4860,7 +4882,7 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
             </Pressable>
             <Pressable onPress={openQuotation} disabled={uploading} style={s.attachOpt}>
               <View style={[s.attachIcon, { backgroundColor: '#F3F0FF' }]}><FileText size={17} color='#6D28D9' /></View>
-              <Text style={s.attachLabel}>Quotation banao</Text>
+              <Text style={s.attachLabel}>Quotation</Text>
             </Pressable>
           </View>
         )}
@@ -6568,7 +6590,7 @@ const s = StyleSheet.create({
   visitStopBtn: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, backgroundColor: '#FFFFFF' },
   visitStopText: { fontSize: 12, fontWeight: '700', color: '#0E7490' },
   visitBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
-  visitSheet: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, paddingBottom: 28 },
+  visitSheet: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, paddingBottom: 40 },
   visitTitle: { fontSize: 15, fontWeight: '800', color: colors.ink, marginBottom: 10 },
   visitEmpty: { fontSize: 13, color: colors.muted2, paddingVertical: 20, textAlign: 'center' },
   visitRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F0EEE8' },
