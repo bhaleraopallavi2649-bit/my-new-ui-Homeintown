@@ -849,10 +849,10 @@ const styles = StyleSheet.create({
   cardActive: { borderColor: colors.greenText, borderWidth: 2 },
   cardImage: { width: 90, height: '100%', minHeight: 110, backgroundColor: '#F3F4F6' },
   cardInfo: { flex: 1, padding: 10, justifyContent: 'space-between' },
-  cardName: { fontSize: 13, fontWeight: '700', color: '#111827' },
-  cardLocation: { fontSize: 10, color: colors.muted2, marginTop: 2 },
-  cardPriceRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
-  cardPrice: { fontSize: 15, fontWeight: '900', color: '#111827' },
+  cardName: { fontSize: 14, fontWeight: '800', color: '#111827' },
+  cardLocation: { fontSize: 10.5, color: colors.muted2, marginTop: 2 },
+  cardPriceRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 5 },
+  cardPrice: { fontSize: 17, fontWeight: '900', color: '#1F4D3A' },
   cardBhk: { fontSize: 10, color: colors.muted2, backgroundColor: '#F3F4F6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
   // Replaces cardCtaRow / cardCtaBtn / cardCtaText / cardCtaWhatsapp /
   // cardCtaTextWhatsapp, all deleted with the Call and WhatsApp buttons. Full

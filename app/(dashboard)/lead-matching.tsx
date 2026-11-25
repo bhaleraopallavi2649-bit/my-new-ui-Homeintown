@@ -563,33 +563,9 @@ export default function LeadMatchingHub({
   // dark-green headline + subline (no "Explore Now"). Both are the feed's list
   // header, so they scroll away with the property cards.
   // My Post / Matching / Search now live in the host header (crm.tsx); this is
-  // just the compact promo box with a "Chat Now" button that opens Ask AI.
-  // Buy / Sell / Rent buttons that replace the tagline box.
-  const intentItems = [
-    { v: 'buy' as const, label: 'Buy Property', Icon: HomeIcon },
-    { v: 'sell' as const, label: 'Sell Property', Icon: TagIcon },
-    { v: 'rent' as const, label: 'Rent Property', Icon: KeyRound },
-  ];
-  const leadMatchBanner = view === 'leadmatch' ? (
-    // Segmented pill: the picked option is a filled green pill with white text and
-    // a small bar under it; the others are plain with thin dividers between them.
-    <View style={hub.intentBox}>
-      {intentItems.map(({ v, label, Icon }, i) => (
-        <React.Fragment key={v}>
-          {i > 0 && <View style={hub.intentDivider} />}
-          <Pressable
-            onPress={() => onAskAI?.(v)}
-            style={({ pressed }) => [hub.intentItem, pressed && { opacity: 0.6 }]}
-            accessibilityRole="button"
-            accessibilityLabel={label}
-          >
-            <Icon size={18} color={HG_GREEN} strokeWidth={2.2} />
-            <Text style={hub.intentText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>{label}</Text>
-          </Pressable>
-        </React.Fragment>
-      ))}
-    </View>
-  ) : null;
+  // Buy/Sell/Rent banner removed — these buttons now appear inside the chat
+  // composer's Buy/Sell/Rent starter strip (above the input box) in GroupChatEmbedded.
+  const leadMatchBanner = null;
 
   // Keep the tab bar visible on the AI Lead Matching section (it IS the primary
   // section). Only hide chrome when a room is opened from the separate Groups tab.
@@ -887,6 +863,22 @@ const hub = StyleSheet.create({
   // the icon-only pill's top-right corner so a non-zero count is still visible.
   aiPillBadgeCorner: { position: 'absolute', top: -5, right: 4 },
   aiPillBadgeText: { fontSize: 9, fontWeight: '800', color: '#fff' },
+  // ── Lead Match: My Post / Matching tab-style toggle ──
+  lmToggleRow: { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 8, gap: 10 },
+  lmTabBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 7, paddingVertical: 10, borderRadius: 20,
+    backgroundColor: '#F3FBF5', borderWidth: 1, borderColor: 'rgba(31,77,58,0.18)',
+  },
+  lmTabBtnActive: { backgroundColor: '#1F4D3A', borderColor: '#1F4D3A' },
+  lmTabTxt: { fontSize: 13, fontWeight: '700', color: '#1F4D3A' },
+  lmTabTxtActive: { fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
+  // keep old keys so nothing breaks
+  // Translucent green tint for the selected tab (matches the glass bar).
+  navIconWrapActive: { backgroundColor: 'rgba(31,77,58,0.10)' },
+  lmToggleBtn: { flex: 1 },
+  lmToggleTxt: { fontSize: 13, fontWeight: '700', color: '#1F4D3A' },
+  lmToggleDivider: { width: 1 },
   leadsBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 18, backgroundColor: colors.brandTint, borderWidth: 1, borderColor: colors.brand },
   leadsBtnText: { fontSize: 11.5, fontWeight: '800', color: colors.brand },
   closeBtn: { padding: 6, borderRadius: 10, backgroundColor: colors.slateBg },

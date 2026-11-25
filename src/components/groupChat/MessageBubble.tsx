@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, Animated, Image, Linking } from 'react-native';
 import {
   Building2, MapPin, BadgeCheck, CheckCircle2, ChevronDown, ChevronUp, FileText,
-  ArrowRight, Eye, Users,
+  ArrowRight, Eye, Users, BedDouble, Home as HomeIcon,
 } from '../../icons';
 import type { GroupMessage, InventoryCard } from '../../lib/api';
 import { colors } from '../../theme';
@@ -24,6 +24,15 @@ import Tag from './Tag';
 import CardActions from './CardActions';
 import GroupMatchCard from './GroupMatchCard';
 import SharedVisitingCard, { parseVisitingCardText } from './SharedVisitingCard';
+
+// Deterministic color per broker/sender id — consistent across renders.
+// A simple djb2-style hash over the string.
+const BROKER_COLORS = ['#1A6B4A', '#2563EB', '#7C3AED', '#BE185D', '#D97706', '#0891B2', '#16A34A', '#B45309'];
+function brokerColor(seed: string): string {
+  let h = 5381;
+  for (let i = 0; i < seed.length; i++) h = ((h << 5) + h) + seed.charCodeAt(i);
+  return BROKER_COLORS[Math.abs(h) % BROKER_COLORS.length];
+}
 
 // ── Message bubble ──
 // Memoised: without this, every keystroke in the composer (whose state lives in
@@ -237,20 +246,34 @@ const MessageBubble = React.memo(function MessageBubble({
     const where = [pa.location, pa.city].filter(Boolean).join(', ');
 
     return (
-      <View style={[mbs.cardWrap, { alignSelf: 'center' }]}>
+      <View style={[mbs.cardWrap, { alignSelf: 'flex-start' }]}>
         <Pressable
           onPress={() => pa.project && onPropertyViewDetails(pa.project)}
-          style={mbs.visitCard}
+          style={mbs.paCard}
           accessibilityRole="button"
           accessibilityLabel={`Project ${pa.projectName || 'announcement'}. Tap to open the project.`}
         >
-          <View style={mbs.visitHeaderRow}>
-            <Building2 size={15} color={colors.brand} />
-            <Text style={[mbs.visitTag, { color: colors.brand }]} numberOfLines={1}>New project</Text>
-            <Text style={mbs.visitClock}>{messageClock(msg.createdAt)}</Text>
+          {/* Header: building icon + "New project" label + time */}
+          <View style={mbs.paHeaderRow}>
+            <View style={mbs.paIconWrap}>
+              <Building2 size={14} color="#FFFFFF" />
+            </View>
+            <Text style={mbs.paTag}>New project</Text>
+            <View style={mbs.paTimePill}>
+              <Text style={mbs.paTime}>{messageClock(msg.createdAt)}</Text>
+            </View>
           </View>
-          <Text style={mbs.visitProject} numberOfLines={1}>{pa.projectName || 'Project'}</Text>
-          {where ? <Text style={mbs.visitSub} numberOfLines={1}>{where}</Text> : null}
+
+          {/* Project name */}
+          <Text style={mbs.paProject} numberOfLines={1}>{pa.projectName || 'Project'}</Text>
+
+          {/* Location */}
+          {!!where && (
+            <View style={mbs.paLocRow}>
+              <MapPin size={12} color="#2E8B4F" />
+              <Text style={mbs.paLoc} numberOfLines={1}>{where}</Text>
+            </View>
+          )}
         </Pressable>
       </View>
     );
@@ -549,29 +572,104 @@ const MessageBubble = React.memo(function MessageBubble({
         </View>
       ) : undefined;
 
+      // Clean wide property card matching the reference screenshot.
+      // Type (Flat/Plot) first, address below, BHK tags, broker + blue tick top-left,
+      // label badge (Uploaded/Posted/New) top-right, View Property only for hasGroup (right side).
+      // For uploaded properties (hasGroup), extract as much data as possible from
+      // inv fields, the linked project object, and the description text.
+      const bubbleName = projectLabel || typeLabel || heading;
+      // Address: inv.area (locality) + inv.city, or project location fields
+      const bubbleLoc = locShown
+        || [String(po.location || ''), String(po.city || inv.city || '')].filter(Boolean).join(', ')
+        || (inv.area ? `${inv.area}${inv.city ? ', ' + inv.city : ''}` : '');
+      // BHK: inv bhkOptions OR project configuration
+      const bubbleBhk = bhkText
+        || (po.bhkOptions || po.configuration?.bhkOptions || []).filter(Boolean).join(', ')
+        || (() => { const m = desc.match(/(\d(?:\.\d)?)\s*bhk/i); return m ? `${m[1]} BHK` : ''; })();
+      // Label for the top-right badge
+      const cardKindLabel = hasGroup ? 'Uploaded property' : 'Posted property';
+      // "New property" if posted within last 10 minutes
+      const ageMs = msg.createdAt ? Date.now() - new Date(msg.createdAt).getTime() : Infinity;
+      const isNew = ageMs < 10 * 60 * 1000;
+
+      // ── UPLOADED PROPERTY CARD (hasGroup) — reference screenshot design ──
+      if (hasGroup && !!cardProjectId) {
+        return (
+          <Animated.View style={[isMe ? mbs.propCardWrapMe : mbs.propCardWrapThem, { backgroundColor: bgColor }]}>
+            <Pressable onPress={openCard} accessibilityRole="button" accessibilityLabel={`${bubbleName}. Tap to view`}
+              style={[mbs.upCard, isMe && mbs.upCardMe]}>
+              <View style={mbs.upArc} />
+              {!!senderName && senderName !== 'Unknown' && (
+                <View style={mbs.upBrokerRow}>
+                  <Text style={[mbs.upBroker, { color: brokerColor(msg.sender.id || senderName) }]} numberOfLines={1}>{senderName}</Text>
+                  <BadgeCheck size={14} color="#2563EB" />
+                </View>
+              )}
+              {!!bubbleName && <Text style={mbs.upName} numberOfLines={2}>{bubbleName}</Text>}
+              {!!bubbleLoc && (
+                <View style={mbs.upLocRow}>
+                  <MapPin size={13} color="#2E8B4F" />
+                  <Text style={mbs.upLoc} numberOfLines={1}>{bubbleLoc}</Text>
+                </View>
+              )}
+              {(!!bubbleBhk || !!areaShown) && (
+                <View style={mbs.upPill}>
+                  <HomeIcon size={13} color="#1F4D3A" />
+                  <Text style={mbs.upPillTxt} numberOfLines={1}>
+                    {[bubbleBhk, areaShown].filter(Boolean).join('  |  ')}
+                  </Text>
+                </View>
+              )}
+              <View style={mbs.upBottomRow}>
+                {!!priceText && <Text style={mbs.upPrice} numberOfLines={1}>{priceText}</Text>}
+                <Pressable
+                  onPress={e => { e.stopPropagation?.(); onViewProperty(cardProjectId, inv); }}
+                  style={mbs.upViewBtn} hitSlop={8}
+                  accessibilityRole="button" accessibilityLabel="View property"
+                >
+                  <Text style={mbs.upViewTxt}>View property</Text>
+                  <ArrowRight size={14} color="#1F4D3A" />
+                </Pressable>
+              </View>
+            </Pressable>
+          </Animated.View>
+        );
+      }
+
+      // ── POSTED PROPERTY CARD (!hasGroup) — simple layout ──
       return (
-        <Animated.View style={[mbs.cardWrap, mbs.inventoryWrap, { borderRadius: 22, backgroundColor: bgColor }]}>
-          <PhotoCard
-            image={coverUrl || null}
-            seed={msg.id + (cardProjectId || title || '')}
-            price={priceShown || undefined}
-            pricePerSqft={perSqft || undefined}
-            // Positional on purpose: [BHK, area, type] — empty ones stay empty.
-            chips={[bhkText, areaShown, typeLabel]}
-            title={heading}
-            location={locShown || undefined}
-            status={statusShown || undefined}
-            listingLabel={rentHinted ? 'For Rent' : 'For Sale'}
-            broker={hasBroker ? senderName : undefined}
-            footer={extraNode}
-            onPress={openCard}
-            // View Project → map landing page; without a linked project, the details screen.
-            // View Project only where the property has its own group; it opens that
-            // property's landing page on the map.
-            onViewProperty={hasGroup ? () => onViewProperty(cardProjectId, inv) : undefined}
-            // No Chat button on Lead Match cards (removed on request).
-            accessibilityLabel={`${heading}. View details`}
-          />
+        <Animated.View style={[isMe ? mbs.propCardWrapMe : mbs.propCardWrapThem, { backgroundColor: bgColor }]}>
+          <Pressable onPress={openCard} accessibilityRole="button" accessibilityLabel={`${bubbleName}. Tap to view`}
+            style={[mbs.propCard, isMe && mbs.propCardMe]}>
+            <View style={mbs.propTwoCol}>
+              <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+                <View style={mbs.propBrokerRow}>
+                  {!!senderName && senderName !== 'Unknown' && (
+                    <>
+                      <Text style={[mbs.propBroker, { color: brokerColor(msg.sender.id || senderName) }]} numberOfLines={1}>{senderName}</Text>
+                      <BadgeCheck size={12} color="#2563EB" />
+                    </>
+                  )}
+                </View>
+                {!!bubbleName && <Text style={mbs.propName} numberOfLines={2}>{bubbleName}</Text>}
+                {!!bubbleLoc && (
+                  <View style={mbs.propLocRow}>
+                    <MapPin size={11} color="#2E8B4F" />
+                    <Text style={mbs.propLoc} numberOfLines={1}>{bubbleLoc}</Text>
+                  </View>
+                )}
+                {(!!bubbleBhk || !!areaShown) && (
+                  <View style={[mbs.propLocRow, { marginTop: 1 }]}>
+                    <BedDouble size={11} color="#2E8B4F" />
+                    <Text style={mbs.propLoc} numberOfLines={1}>
+                      {[bubbleBhk, areaShown].filter(Boolean).join('  |  ')}
+                    </Text>
+                  </View>
+                )}
+                {!!priceText && <Text style={mbs.propPrice} numberOfLines={1}>{priceText}</Text>}
+              </View>
+            </View>
+          </Pressable>
         </Animated.View>
       );
     }
@@ -663,7 +761,7 @@ const MessageBubble = React.memo(function MessageBubble({
                 <View style={mbs.propertySenderWrap}>
                   <BuilderAvatar name={senderName} seed={msg.sender.id || senderName} size={18} style={mbs.propertySenderAvatar} />
                   <Text style={mbs.propertySender} numberOfLines={1}>{senderName}</Text>
-                  {isVerified && <BadgeCheck size={17} color="#1F8A4C" />}
+                  {isVerified && <BadgeCheck size={17} color="#2563EB" />}
                 </View>
               </View>
 
@@ -914,6 +1012,130 @@ const mbs = StyleSheet.create({
   // keys unused. `unitDot` stays — it is shared by the summary segments AND the
   // expanded rows, so it must not be resized for one of them.
   unitDot: { width: 10, height: 10, borderRadius: 5 },
+  // ── WhatsApp-style incoming property message bubble (legacy, kept for reference) ──
+  waBubbleWrap: { alignSelf: 'flex-start', maxWidth: '78%', marginLeft: 4 },
+  waBubble: {
+    backgroundColor: '#DCF8DC',
+    borderRadius: 14,
+    borderTopLeftRadius: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    gap: 3,
+    shadowColor: '#1F4D3A',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  waNotch: {
+    position: 'absolute',
+    left: -6,
+    top: 0,
+    width: 0,
+    height: 0,
+    borderTopWidth: 8,
+    borderTopColor: '#DCF8DC',
+    borderLeftWidth: 8,
+    borderLeftColor: 'transparent',
+  },
+  waName: { fontSize: 14, fontWeight: '800', color: '#1F4D3A', lineHeight: 19 },
+  waBhk: { fontSize: 12.5, fontWeight: '700', color: '#1F4D3A', lineHeight: 17 },
+  waType: { fontSize: 12, fontWeight: '500', color: '#3B6648', lineHeight: 16 },
+  waBrokerRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 2 },
+  waBroker: { fontSize: 11.5, fontWeight: '700', color: '#2563EB', flexShrink: 1 },
+  waLocRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  waLoc: { flexShrink: 1, fontSize: 11.5, color: '#3B6648', lineHeight: 15 },
+  waViewBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    alignSelf: 'flex-end', marginTop: 7,
+    backgroundColor: 'rgba(31,77,58,0.10)',
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderRadius: 10,
+  },
+  waViewTxt: { fontSize: 11, fontWeight: '700', color: '#1F4D3A' },
+
+  // ── Uploaded Property card — reference screenshot design ──
+  upCard: {
+    backgroundColor: '#F4FBF6', borderRadius: 18, borderWidth: 1,
+    borderColor: 'rgba(31,77,58,0.15)', paddingHorizontal: 16,
+    paddingTop: 14, paddingBottom: 14, gap: 7, overflow: 'hidden',
+  },
+  upCardMe: { borderTopRightRadius: 2, backgroundColor: '#E8F7EC', borderColor: 'rgba(31,77,58,0.20)' },
+  upArc: {
+    position: 'absolute', top: 0, right: 0, width: 60, height: 60, borderRadius: 30,
+    backgroundColor: 'rgba(31,77,58,0.07)', transform: [{ translateX: 24 }, { translateY: -24 }],
+  },
+  upBrokerRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  upBroker: { fontSize: 13, fontWeight: '700', flexShrink: 1 },
+  upName: { fontSize: 20, fontWeight: '900', color: '#17233A', lineHeight: 26, marginTop: 1 },
+  upLocRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  upLoc: { flexShrink: 1, fontSize: 13, color: '#3D5A47', lineHeight: 17 },
+  upPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
+    backgroundColor: '#DCF0E3', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, marginTop: 2,
+  },
+  upPillTxt: { fontSize: 13, fontWeight: '600', color: '#1F4D3A' },
+  upBottomRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
+  upPrice: { fontSize: 22, fontWeight: '900', color: '#17233A' },
+  upViewBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: '#DCF0E3', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8,
+  },
+  upViewTxt: { fontSize: 13, fontWeight: '700', color: '#1F4D3A' },
+  // ── Clean wide property card (reference screenshot style) ──
+  // Narrower than full width — WhatsApp message look.
+  propCardWrapThem: { alignSelf: 'flex-start', maxWidth: '92%', width: '92%' },
+  propCardWrapMe: { alignSelf: 'flex-end', maxWidth: '92%', width: '92%' },
+  propCardWrap: { alignSelf: 'flex-start', maxWidth: '92%', width: '92%' }, // compat alias
+  propCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderTopLeftRadius: 2, // WhatsApp incoming notch
+    borderWidth: 1,
+    borderColor: 'rgba(31,77,58,0.13)',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  propCardMe: {
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 2, // WhatsApp outgoing notch
+    backgroundColor: '#DCF8DC',
+    borderColor: 'rgba(31,77,58,0.20)',
+  },
+  propTwoCol: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  propTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
+  propBrokerRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 },
+  propBroker: { fontSize: 12, fontWeight: '700', flexShrink: 1 },
+  propTopRight: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 },
+  propBadge: { backgroundColor: '#EEF7F1', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
+  propBadgeNew: { backgroundColor: '#FFF3E6' },
+  propBadgeTxt: { fontSize: 10, fontWeight: '700', color: '#2E7D52' },
+  propBadgeTxtNew: { color: '#B45309' },
+  propType: { fontSize: 15, fontWeight: '800', color: '#17233A', lineHeight: 20 },
+  propName: { fontSize: 14, fontWeight: '800', color: '#17233A', lineHeight: 19 },
+  propLocRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  propLoc: { flexShrink: 1, fontSize: 11.5, color: '#3B6648', lineHeight: 16 },
+  propTagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginTop: 1 },
+  propTag: { backgroundColor: '#E7F0EA', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 },
+  propTagTxt: { fontSize: 11, fontWeight: '600', color: '#1F4D3A' },
+  propPrice: { fontSize: 14, fontWeight: '800', color: '#1F4D3A', marginTop: 2 },
+  propViewRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 4 },
+  propViewBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: '#E7F0EA', borderRadius: 10,
+    paddingHorizontal: 10, paddingVertical: 5,
+  },
+  propViewTxt: { fontSize: 11.5, fontWeight: '700', color: '#1F4D3A' },
+  // Right-side View Property — exactly PhotoCard's s.pill (Projects section)
+  propViewBtnRight: {
+    flexShrink: 0, flexDirection: 'row', alignItems: 'center',
+    gap: 3, paddingHorizontal: 9, paddingVertical: 5,
+    borderRadius: 16, borderWidth: 1,
+    borderColor: '#1F4D3A', backgroundColor: '#F1F8F4',
+    alignSelf: 'center',
+  },
+  propViewTxtRight: { fontSize: 10, fontWeight: '700', color: '#1F4D3A' },
+
   cardWrap: { width: '92%', maxWidth: 380, minWidth: 0 },
   // Warm-port: inventory cards run the full list width in the reference.
   inventoryWrap: { width: '100%', maxWidth: '100%', alignSelf: 'stretch' },
@@ -1230,6 +1452,65 @@ const mbs = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 9,
+  },
+  // ── Project announcement card — modern green theme ──
+  paCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(31,77,58,0.14)',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    gap: 5,
+  },
+  paHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+  },
+  paIconWrap: {
+    width: 26,
+    height: 26,
+    borderRadius: 7,
+    backgroundColor: '#1F4D3A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  paTag: {
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#1F4D3A',
+    letterSpacing: 0.1,
+  },
+  paTimePill: {
+    backgroundColor: '#E7F0EA',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  paTime: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#1F4D3A',
+  },
+  paProject: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#17233A',
+    marginTop: 1,
+  },
+  paLocRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  paLoc: {
+    flex: 1,
+    fontSize: 11.5,
+    color: '#3F7A5A',
+    fontWeight: '500',
   },
   visitHeaderRow: {
     flexDirection: 'row',

@@ -75,6 +75,90 @@ function BottomNavItem({ active, icon, label, badge, onPress }: {
   );
 }
 
+// ── Animated My Post / Matching segmented toggle ──
+// Sliding green indicator like the Lead Match / My Group tab row.
+function LmPostMatchToggle({ lmBadge, onPost, onMatch }: {
+  lmBadge: number; onPost: () => void; onMatch: () => void;
+}) {
+  const [active, setActive] = React.useState<'post' | 'match'>('post');
+  const slideX = React.useRef(new Animated.Value(0)).current;
+  const TAB_W = 0; // measured at runtime
+  const [trackW, setTrackW] = React.useState(0);
+
+  const switchTo = (tab: 'post' | 'match') => {
+    if (active === tab) {
+      if (tab === 'post') onPost(); else onMatch();
+      return;
+    }
+    setActive(tab);
+    Animated.timing(slideX, {
+      toValue: tab === 'post' ? 0 : 1,
+      duration: 200,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start(() => { if (tab === 'post') onPost(); else onMatch(); });
+  };
+
+  const indicatorLeft = slideX.interpolate({
+    inputRange: [0, 1], outputRange: [2, (trackW / 2) + 2],
+  });
+
+  return (
+    <View
+      style={lt.track}
+      onLayout={e => setTrackW(e.nativeEvent.layout.width)}
+    >
+      <Animated.View style={[lt.indicator, { left: indicatorLeft, width: trackW / 2 - 4 }]} />
+      {(['post', 'match'] as const).map(tab => {
+        const isActive = active === tab;
+        const countBadge = tab === 'match' && lmBadge > 0;
+        const label = tab === 'post' ? 'My Post' : 'Matching';
+        const Icon = tab === 'post' ? Building2 : Target;
+        return (
+          <Pressable
+            key={tab}
+            style={({ pressed }) => [lt.btn, pressed && { opacity: 0.75 }]}
+            onPress={() => switchTo(tab)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isActive }}
+            accessibilityLabel={label}
+          >
+            <Icon size={13} color={isActive ? HG.green : '#6B8F7B'} strokeWidth={isActive ? 2.4 : 1.8} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Text style={[lt.txt, isActive && lt.txtActive]} numberOfLines={1}>{label}</Text>
+              {countBadge && (
+                <View style={lt.redBadge}>
+                  <Text style={lt.redBadgeTxt}>{lmBadge > 99 ? '99+' : lmBadge}</Text>
+                </View>
+              )}
+            </View>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+const lt = StyleSheet.create({
+  track: {
+    flexDirection: 'row', marginHorizontal: 12, marginTop: 4, marginBottom: 4,
+    backgroundColor: 'rgba(255,255,255,0.72)', borderRadius: 12,
+    borderWidth: 1, borderColor: 'rgba(31,77,58,0.12)',
+    overflow: 'hidden', position: 'relative',
+  },
+  indicator: {
+    position: 'absolute', top: 2, bottom: 2, borderRadius: 10,
+    backgroundColor: '#E7F0EA',
+  },
+  btn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 5, paddingVertical: 6, zIndex: 1,
+  },
+  txt: { fontSize: 11, fontWeight: '600', color: '#6B8F7B' },
+  txtActive: { color: '#1F4D3A', fontWeight: '800' },
+  redBadge: { minWidth: 16, height: 16, borderRadius: 8, backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
+  redBadgeTxt: { fontSize: 9, fontWeight: '800', color: '#fff' },
+});
+
 export default function HomeDashboard() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -232,16 +316,15 @@ export default function HomeDashboard() {
   // The footer is a normal full-width bar now (not floating), so the content
   // area already ends above it and needs no extra bottom padding.
   const contentPad = 0;
-  // Lead Match: the footer is a floating translucent pill (like the header) and
-  // hides while the keyboard is up so it never covers the chat box.
-  const floatingFooter = tab === 'leadmatch';
+  // Lead Match no longer uses a floating footer — the footer is always a fixed bar.
+  const floatingFooter = false;
   const [kbVisible, setKbVisible] = useState(false);
   useEffect(() => {
     const a = Keyboard.addListener('keyboardDidShow', () => setKbVisible(true));
     const b = Keyboard.addListener('keyboardDidHide', () => setKbVisible(false));
     return () => { a.remove(); b.remove(); };
   }, []);
-  const floatBottom = floatingFooter && !kbVisible ? 56 + Math.max(insets.bottom, 6) + 4 + 8 : 0;
+  const floatBottom = 0;
 
   return (
     <View style={s.root}>
@@ -273,21 +356,9 @@ export default function HomeDashboard() {
         {/* (was: Lead Match / My Group / CRM: the header actions sit in one rounded
             translucent pill — removed, the whole header is the pill now) */}
         <View style={s.navRight}>
-          {/* Lead Match: My Post · Matching · Search as boxless icons with a
-              tiny label below. Upload moved to the bottom nav "+". */}
+          {/* Lead Match: Search · Upload as boxless icons (My Post/Matching moved to toggle row below tabs) */}
           {tab === 'leadmatch' && (
             <>
-              <Pressable style={({ pressed }) => [s.hdrAct, pressed && s.hdrActPressed]} onPress={() => lmActionsRef.current?.post()} hitSlop={4} accessibilityRole="button" accessibilityLabel="My Post">
-                <Building2 size={19} color={HG.green} strokeWidth={2.2} />
-                <Text style={s.hdrActText}>My Post</Text>
-              </Pressable>
-              <Pressable style={({ pressed }) => [s.hdrAct, pressed && s.hdrActPressed]} onPress={() => lmActionsRef.current?.matching()} hitSlop={4} accessibilityRole="button" accessibilityLabel={lmBadge ? `Matching, ${lmBadge}` : 'Matching'}>
-                <View>
-                  <Target size={19} color={HG.green} strokeWidth={2.2} />
-                  {!!lmBadge && <View style={s.hdrBadge}><Text style={s.hdrBadgeText}>{lmBadge > 99 ? '99+' : lmBadge}</Text></View>}
-                </View>
-                <Text style={s.hdrActText}>Matching</Text>
-              </Pressable>
               <Pressable
                 style={({ pressed }) => [s.hdrAct, pressed && s.hdrActPressed]}
                 onPress={() => { if (lmSearchOpen) setLmQuery(''); setLmSearchOpen((v) => !v); }}
@@ -298,6 +369,13 @@ export default function HomeDashboard() {
                 <Search size={19} color={HG.green} strokeWidth={lmSearchOpen ? 2.8 : 2.2} />
                 <Text style={[s.hdrActText, lmSearchOpen && { textDecorationLine: 'underline' }]}>Search</Text>
               </Pressable>
+              {canUpload && (
+                <Pressable style={({ pressed }) => [s.hdrAct, pressed && s.hdrActPressed]} onPress={goUpload} hitSlop={4} accessibilityRole="button" accessibilityLabel="Upload">
+                  <View style={s.uploadCircle}>
+                    <Upload size={17} color="#fff" strokeWidth={2.4} />
+                  </View>
+                </Pressable>
+              )}
             </>
           )}
           {/* CRM only: search icon beside "+", toggles the lead search. */}
@@ -376,6 +454,46 @@ export default function HomeDashboard() {
             </Pressable>
           )}
         </View>
+      )}
+
+      {/* ── Tab switcher row: Lead Match · My Group · CRM · Project ──
+          Shown below the navbar pill, same translucent style. */}
+      <View style={s.tabBtnRow}>
+        {([
+          { key: 'leadmatch', label: 'Lead Match', Icon: Zap },
+          { key: 'mygroup',   label: 'My Group',   Icon: Users },
+          { key: 'crm',       label: 'CRM',        Icon: BarChart3 },
+          { key: 'marketplace', label: 'Project',  Icon: MapIcon },
+        ] as const).map(({ key, label, Icon }) => {
+          const active = tab === key;
+          return (
+            <Pressable
+              key={key}
+              onPress={() => {
+                if (key === 'leadmatch') { setTab('leadmatch'); setLeadMatchReset((k) => k + 1); }
+                else if (key === 'marketplace') { setFocusProjectId(null); setTab('marketplace'); }
+                else setTab(key as OverviewTab);
+              }}
+              style={({ pressed }) => [s.tabBtn, active && s.tabBtnActive, pressed && { opacity: 0.75 }]}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={label}
+            >
+              <Icon size={20} color={active ? HG.green : '#6B8F7B'} strokeWidth={active ? 2.5 : 1.9} />
+              <Text style={[s.tabBtnLabel, active && s.tabBtnLabelActive]} numberOfLines={1}>{label}</Text>
+              {key === 'crm' && crmHot > 0 && <View style={s.tabBtnDot} />}
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {/* ── My Post / Matching toggle — shown only on Lead Match, below tab row ── */}
+      {tab === 'leadmatch' && (
+        <LmPostMatchToggle
+          lmBadge={lmBadge}
+          onPost={() => lmActionsRef.current?.post()}
+          onMatch={() => lmActionsRef.current?.matching()}
+        />
       )}
 
       </View>
@@ -495,43 +613,6 @@ export default function HomeDashboard() {
           </Pressable>
         </Pressable>
       </Modal>
-
-      {/* ── Bottom navigation: full-width white bar, icon + label per tab, a
-          round "+" in the middle (same layout as the YouTube footer reference). */}
-      {!(floatingFooter && kbVisible) && (
-      <View
-        pointerEvents={floatingFooter ? 'box-none' : 'auto'}
-        style={floatingFooter ? [s.floatFootWrap, { bottom: Math.max(insets.bottom, 6) + 4 }] : [s.floatNavWrap, { paddingBottom: Math.max(insets.bottom, 4) }]}
-      >
-        <View style={[s.bottomNav, floatingFooter && s.bottomNavPill]} accessibilityRole="tablist">
-          <BottomNavItem
-            active={tab === 'leadmatch'}
-            onPress={() => { setTab('leadmatch'); setLeadMatchReset((k) => k + 1); }}
-            icon={(c) => <Zap size={23} color={c} strokeWidth={tab === 'leadmatch' ? 2.5 : 1.9} />}
-            label="Lead Match"
-          />
-          <BottomNavItem
-            active={tab === 'mygroup'}
-            onPress={() => setTab('mygroup')}
-            icon={(c) => <Users size={23} color={c} strokeWidth={tab === 'mygroup' ? 2.5 : 1.9} />}
-            label="My Group"
-          />
-          <BottomNavItem
-            active={tab === 'crm'}
-            onPress={() => setTab('crm')}
-            icon={(c) => <BarChart3 size={23} color={c} strokeWidth={tab === 'crm' ? 2.5 : 1.9} />}
-            label="CRM"
-            badge={crmHot > 0}
-          />
-          <BottomNavItem
-            active={tab === 'marketplace'}
-            onPress={() => { setFocusProjectId(null); setTab('marketplace'); }}
-            icon={(c) => <MapIcon size={23} color={c} strokeWidth={tab === 'marketplace' ? 2.5 : 1.9} />}
-            label="Project"
-          />
-        </View>
-      </View>
-      )}
 
     </View>
   );
@@ -689,7 +770,98 @@ const s = StyleSheet.create({
   // Round green Ask AI (chat) button.
   aiRound: { width: 40, height: 40, borderRadius: 20, backgroundColor: HG.green, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 5, shadowOffset: { width: 0, height: 2 }, elevation: 4 },
   aiRoundActive: { borderWidth: 2, borderColor: HG.greenSoft },
-  // Translucent green tint for the selected tab (matches the glass bar).
-  navIconWrapActive: { backgroundColor: 'rgba(31,77,58,0.10)' },
+  // ── My Post / Matching toggle below tab row (Lead Match only) ──
+  lmPostMatchRow: { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 8, gap: 10 },
+  lmPMBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 7, paddingVertical: 10, borderRadius: 20,
+    backgroundColor: '#F3FBF5', borderWidth: 1, borderColor: 'rgba(31,77,58,0.18)',
+  },
+  lmPMBtnActive: { backgroundColor: '#1F4D3A', borderColor: '#1F4D3A' },
+  lmPMTxt: { fontSize: 13, fontWeight: '700', color: '#1F4D3A' },
+  lmPMTxtActive: { fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
+
+  // ── Tab switcher row (Lead Match · My Group · CRM · Project) ──
+  // Sits inside the floating header wrap below the navbar pill.
+  tabBtnRow: {
+    flexDirection: 'row',
+    marginTop: 8,
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(31,77,58,0.10)',
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    gap: 4,
+  },
+  tabBtn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+    paddingVertical: 7,
+    borderRadius: 14,
+    backgroundColor: 'transparent',
+  },
+  tabBtnActive: {
+    backgroundColor: '#E7F0EA',
+  },
+  tabBtnLabel: {
+    fontSize: 10, fontWeight: '600', color: '#6B8F7B',
+  },
+  tabBtnLabelActive: {
+    color: '#1F4D3A', fontWeight: '800',
+  },
+  tabBtnDot: {
+    position: 'absolute', top: 4, right: 10,
+    width: 7, height: 7, borderRadius: 4,
+    backgroundColor: '#EF4444', borderWidth: 1, borderColor: '#fff',
+  },
+  // Half-height variant for My Post / Matching
+  tabBtnHalf: { paddingVertical: 4, gap: 2 },
+  // Upload circle in Lead Match header
+  uploadCircle: {
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: '#1F4D3A',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  // ── Lead Match fixed footer ──
+  lmFooter: {
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E3E6E4',
+    paddingTop: 8,
+    paddingHorizontal: 10,
+    gap: 8,
+  },
+  lmBsrRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  lmBsrBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
+    backgroundColor: '#F3FBF5', borderRadius: 20, borderWidth: 1, borderColor: '#CFE0D6',
+    paddingVertical: 10,
+  },
+  lmBsrText: { fontSize: 11.5, fontWeight: '700', color: '#1F4D3A', flexShrink: 1 },
+  lmMsgRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+  },
+  lmAttachBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#F3FBF5', borderWidth: 1, borderColor: '#CFE0D6',
+  },
+  lmMsgInput: {
+    flex: 1, height: 42,
+    backgroundColor: '#F3FBF5', borderRadius: 21, borderWidth: 1, borderColor: '#CFE0D6',
+    justifyContent: 'center', paddingHorizontal: 16,
+  },
+  lmMsgPlaceholder: { fontSize: 13.5, color: '#8A918C' },
+  lmSendBtn: {
+    width: 42, height: 42, borderRadius: 21,
+    backgroundColor: '#1F4D3A',
+    alignItems: 'center', justifyContent: 'center',
+  },
 
 });

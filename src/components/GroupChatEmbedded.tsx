@@ -600,6 +600,18 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
       // Lead Match feed reads top-down, newest first, so the banner (list
       // header) sits above the latest properties and scrolls away with them.
       if (readOnly) cards = [...cards].reverse();
+      // Lead Match: deduplicate by project id so the same uploaded property
+      // doesn't appear 2–3 times when multiple inventory cards share one project.
+      if (readOnly) {
+        const seen = new Set<string>();
+        cards = cards.filter(m => {
+          const ref = (m.inventoryCard as any)?.project;
+          const pid = typeof ref === 'string' ? ref : (ref?._id || ref?.id || '');
+          if (pid && seen.has(pid)) return false;
+          if (pid) seen.add(pid);
+          return true;
+        });
+      }
       // Lead Match header search: match project / type / BHK / area / city.
       const q = feedQuery.trim().toLowerCase();
       // Lead Match chat box: what the user typed shows at the END of the feed,
@@ -1730,6 +1742,37 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
       toast.show(e?.message || 'Failed to post', 'error');
     } finally {
       setPostingDraft(false);
+    }
+  };
+
+  // Post a property card to the universal (community) group specifically.
+  // Used by the "Post to Group" button in My Post sheet.
+  const postToUniversalRoom = async (disp: any, projectId?: string) => {
+    const universal = myRooms.find(r => r.isUniversal) || myRooms.find(r => /hit community/i.test(r.name));
+    if (!universal) { toast.show('Universal group not found', 'error'); return; }
+    try {
+      let card: InventoryCard;
+      if (projectId) {
+        const backend = myProjects.find(p => String(p.id) === String(projectId));
+        if (backend) {
+          const disp2 = projectToDisplay(backend as any);
+          card = { ...(disp2 as any), project: projectId };
+        } else {
+          const local = postedList.find((x: any) => String(x.projectId) === String(projectId));
+          const entry = local || { leadId: disp.id, title: disp.title, subtitle: disp.subtitle, price: disp.price, fields: disp.fields, isSellable: true, intent: 'sell' };
+          const built = buildProjectFromDraft(entry);
+          card = { ...built.card, project: projectId };
+        }
+      } else {
+        const local = postedList.find((x: any) => x.leadId === disp.id || (x.title === disp.title && x.subtitle === disp.subtitle));
+        const entry = local || { leadId: disp.id, title: disp.title, subtitle: disp.subtitle, price: disp.price, fields: disp.fields, isSellable: true, intent: 'sell' };
+        const built = buildProjectFromDraft(entry);
+        card = { ...built.card };
+      }
+      await groupChatApi.postMessage(universal.id, { messageType: 'inventory_card', inventoryCard: card });
+      toast.show('Universal group mein post ho gaya 📢', 'success');
+    } catch (e: any) {
+      toast.show(e?.message || 'Post failed', 'error');
     }
   };
 
@@ -4785,7 +4828,8 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
           Sits right above the input on the AI Lead Matching landing page, so a
           new user immediately sees what this section does. Tapping one opens the
           assistant with that intent already answered, continuing the flow. ── */}
-      {!feedOnly && !aiActive && aiAllowed && (
+      {/* Buy/Sell/Rent starters: shown in Lead Match feed too (feedOnly with showComposer). */}
+      {(!feedOnly || showComposer) && !aiActive && aiAllowed && (
         <View style={ip.stripWrap}>
           {/* Warm-port had a "Shuru Karein — Tap Karein" promo banner card (Target
               icon + HeaderPhoto + subtitle) above these three option cards. The
@@ -5022,19 +5066,29 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
                   ? myProjects.find((p) => String(p.id) === String(backendProjectId))
                   : null;
                 return (
-                  <PostCard
-                    key={disp.id}
-                    item={disp}
-                    posted
-                    cooldownLeftMs={leftMs}
-                    posting={false}
-                    onPost={() => {
-                      // Re-post this property's card into the group (after cooldown).
-                      if (backend) repostProject(backend, disp);
-                      else repostFromEntry({ ...(local || {}), leadId: disp.id, title: disp.title, subtitle: disp.subtitle, price: disp.price, fields: disp.fields, isSellable: true, intent: 'sell' }, disp);
-                    }}
-                    onView={() => setViewProperty(disp)}
-                  />
+                  <View key={disp.id} style={{ gap: 6 }}>
+                    <PostCard
+                      item={disp}
+                      posted
+                      cooldownLeftMs={leftMs}
+                      posting={false}
+                      onPost={() => {
+                        // Re-post this property's card into the group (after cooldown).
+                        if (backend) repostProject(backend, disp);
+                        else repostFromEntry({ ...(local || {}), leadId: disp.id, title: disp.title, subtitle: disp.subtitle, price: disp.price, fields: disp.fields, isSellable: true, intent: 'sell' }, disp);
+                      }}
+                      onView={() => setViewProperty(disp)}
+                    />
+                    {/* Post to Universal Group button */}
+                    <Pressable
+                      onPress={() => postToUniversalRoom(disp, backendProjectId)}
+                      style={({ pressed }) => [pd.postToGroupBtn, pressed && { opacity: 0.75 }]}
+                      accessibilityRole="button"
+                      accessibilityLabel="Post to Group"
+                    >
+                      <Text style={pd.postToGroupTxt}>📢 Post to Group</Text>
+                    </Pressable>
+                  </View>
                 );
               })}
 
@@ -5448,7 +5502,7 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
                   <View style={gi.nameRow}>
                     <Text style={gi.name} numberOfLines={2}>{roomDisplayName(activeRoom)}</Text>
                     {/* Green stays the verification colour everywhere in the app. */}
-                    {activeRoom.builder?.isVerified && <BadgeCheck size={16} color={colors.greenText} />}
+                    {activeRoom.builder?.isVerified && <BadgeCheck size={16} color="#2563EB" />}
                   </View>
                   <Text style={gi.counts}>
                     {[
@@ -5458,7 +5512,6 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
                       activeRoom.roomType === 'builder' && builderProjects.length > 0
                         ? `${builderProjects.length} project${builderProjects.length !== 1 ? 's' : ''}`
                         : '',
-                      activeRoom.builder?.isVerified ? 'Verified' : '',
                     ].filter(Boolean).join(' · ')}
                   </Text>
 
@@ -6693,6 +6746,12 @@ const dp = StyleSheet.create({
 });
 
 const pd = StyleSheet.create({
+  postToGroupBtn: {
+    backgroundColor: '#1F4D3A', borderRadius: 12,
+    paddingVertical: 10, paddingHorizontal: 16,
+    alignItems: 'center', marginTop: 2,
+  },
+  postToGroupTxt: { color: '#fff', fontSize: 13, fontWeight: '700' },
   unitSetupBox: { borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 12, gap: 10 },
   unitSetupTitle: { fontSize: 14, fontWeight: '700', color: colors.ink },
   unitSetupActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
