@@ -118,7 +118,7 @@ export default function JoinGroupPage({
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EAF8EE' },
+  root: { flex: 1, backgroundColor: '#EEF3E9' },
   scroll: { flexGrow: 1, padding: 20, paddingTop: 56 },
   heading: { fontSize: 22, fontWeight: '800', color: colors.ink, textAlign: 'center', marginBottom: 18 },
   card: { alignItems: 'center', padding: 18, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#ECE5D8' },

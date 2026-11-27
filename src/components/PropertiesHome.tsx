@@ -36,7 +36,7 @@ import PhotoCard from './PhotoCard';
 
 // ── Palette: premium cream + dark green (Properties page only) ──
 export const HG = {
-  bg: '#EAF8EE',
+  bg: '#EEF3E9',
   card: '#FFFFFF',
   green: '#1F4D3A',
   greenSoft: '#E7F0EA',

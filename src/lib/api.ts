@@ -964,6 +964,115 @@ export const humanLeadsApi = {
   },
 };
 
+import { analyzeAudioDirect, isDirectAiConfigured, loadLocalAnalyses, LeadFacts } from './geminiAudio';
+
+// ── AI Guide: voice recording / audio analysis ──────────────
+// Backend: controllers/leadAudioController.js. A conversation recorded in the app
+// (or uploaded) is transcribed + analysed by the AI and saved on the lead. Any
+// field the speaker did not mention comes back as 'Not Mentioned'.
+export interface LeadAudioAnalysisData {
+  summary: string;
+  requirements: {
+    propertyType: string; intent: string; location: string; budget: string;
+    bhk: string; area: string; possession: string;
+    otherPreferences: string[]; unclear: string[];
+  };
+  leadAnalysis: {
+    interestLevel: string; seriousness: string; budgetClarity: string; requirementClarity: string;
+    objections: string[]; concerns: string[]; buyingTimeline: string;
+  };
+  recommendations: {
+    suitableProperties: { name: string; reason: string }[];
+    suitableConfigurations: string[]; objectionHandling: string[]; nextQuestions: string[];
+    followUpStrategy: string; suggestedStage: string;
+  };
+  actionPlan: {
+    nextAction: string; followUpMessage: string; whatsappMessage: string; callScript: string;
+    followUpWhen: string; questionsForNextCall: string[];
+  };
+}
+
+export interface LeadAudioAnalysis {
+  id: string;
+  leadId: string;
+  source: 'recorded' | 'uploaded';
+  createdAt: string;
+  analyzedAt: string;
+  language: string;
+  transcript: string;
+  analysis: LeadAudioAnalysisData;
+  audio: {
+    /** False when the server could not store the audio (the analysis is still saved). */
+    available: boolean;
+    /** Short-lived signed link; null when not available. */
+    url: string | null;
+    mimeType: string; sizeBytes: number; durationSec: number; name: string;
+  };
+}
+
+/**
+ * Server answers that mean "the AI route is not available here yet" (backend not
+ * deployed / GEMINI_API_KEY not set) or a network failure. Only these switch to
+ * the on-device Gemini path; real errors (bad file, 413, auth) are shown as-is.
+ */
+const audioServerUnavailable = (e: any) =>
+  !(e instanceof ApiError) || e.status === 404 || e.status === 503 || e.status === 502 || e.status === 504;
+
+export const leadAudioApi = {
+  /** Server history merged with analyses made on this phone (direct mode), newest first. */
+  async list(leadId: string): Promise<LeadAudioAnalysis[]> {
+    const local = await loadLocalAnalyses(leadId);
+    let server: LeadAudioAnalysis[] = [];
+    try {
+      const response = await fetch(
+        `${API_URL}${HUMAN_LEADS_BASE}/${encodeURIComponent(leadId)}/audio-analysis`,
+        { headers: await authHeaders() },
+      );
+      const data = await handleResponse<{ analyses: LeadAudioAnalysis[] }>(response);
+      server = data.analyses || [];
+    } catch (e) {
+      // Route not deployed yet: show what this phone has instead of an error.
+      if (!(isDirectAiConfigured() && audioServerUnavailable(e))) throw e;
+    }
+    return [...server, ...local].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  },
+
+  /**
+   * Uploads one recording / audio file and waits for the AI result (can take
+   * 10-60 s). Multipart: NO manual Content-Type, or React Native cannot add the
+   * boundary and the server receives an unparseable body (same note as
+   * mediaApi.uploadGroupAttachment).
+   */
+  async analyze(opts: {
+    leadId: string; uri: string; name: string; mimeType: string;
+    durationSec: number; source: 'recorded' | 'uploaded';
+    /** Used only by the on-device fallback (the server reads the lead itself). */
+    lead?: LeadFacts;
+  }): Promise<{ analysis: LeadAudioAnalysis; audioStored: boolean }> {
+    try {
+      const token = await tokenStorage.get();
+      const form = new FormData();
+      form.append('audio', { uri: opts.uri, name: opts.name, type: opts.mimeType } as any);
+      form.append('durationSec', String(Math.round(opts.durationSec || 0)));
+      form.append('source', opts.source);
+      const headers: Record<string, string> = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const response = await fetch(
+        `${API_URL}${HUMAN_LEADS_BASE}/${encodeURIComponent(opts.leadId)}/audio-analysis`,
+        { method: 'POST', headers, body: form },
+      );
+      return await handleResponse<{ analysis: LeadAudioAnalysis; audioStored: boolean }>(response);
+    } catch (e) {
+      if (!(isDirectAiConfigured() && audioServerUnavailable(e))) throw e;
+    }
+    // Server path unavailable: analyse on the phone. Matched properties keep the
+    // recommendations grounded in real inventory; a failure there is not fatal.
+    let matches: MatchedProperty[] = [];
+    try { matches = (await humanLeadsApi.getMatches(opts.leadId)).matches || []; } catch { /* none */ }
+    return analyzeAudioDirect({ ...opts, matches });
+  },
+};
+
 // ── Site visits ─────────────────────────────────────────────
 // A lead owns the SCHEDULE (siteVisitDate / siteVisitTime, set through
 // humanLeadsApi.update above); a SiteVisit owns the EXECUTION — arrival,

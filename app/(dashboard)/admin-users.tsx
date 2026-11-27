@@ -300,7 +300,7 @@ export default function AdminUsersScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EAF8EE' },
+  root: { flex: 1, backgroundColor: '#EEF3E9' },
   title: { fontSize: 25, fontWeight: '800', color: colors.ink },
   sub: { fontSize: 14, color: '#64718C', marginTop: 1 },
   searchWrap: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#ECE5D8', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10 },

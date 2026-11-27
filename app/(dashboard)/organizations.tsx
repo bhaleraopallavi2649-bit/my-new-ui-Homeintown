@@ -179,7 +179,7 @@ export default function OrganizationsScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EAF8EE' },
+  root: { flex: 1, backgroundColor: '#EEF3E9' },
   // header style kept for reference; the warm PhotoHeader supplies the header now.
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: colors.line },
   title: { fontSize: 25, fontWeight: '800', color: colors.ink },
@@ -203,7 +203,7 @@ const s = StyleSheet.create({
   agentChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   agentChip: { backgroundColor: '#E7F0EA', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20 },
   agentChipText: { fontSize: 11, fontWeight: '600', color: colors.brand },
-  modal: { flex: 1, backgroundColor: '#EAF8EE' },
+  modal: { flex: 1, backgroundColor: '#EEF3E9' },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: colors.line },
   modalTitle: { fontSize: 17, fontWeight: 'bold', color: colors.ink },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: colors.ink },

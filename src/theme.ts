@@ -21,7 +21,7 @@ export const colors = {
   brand: '#1F4D3A', // dark green (app-wide green theme)
   brandDark: '#173D2E',
   brandTint: '#1F4D3A14', // ~8% green tint for subtle backgrounds
-  cream: '#EAF8EE',
+  cream: '#EEF3E9',
   ink: '#17233A', // primary text (dark navy)
   night: '#17233A', // deep navy surface
   night2: '#E7F0EA', // pale green (was dark #292524, then peach)

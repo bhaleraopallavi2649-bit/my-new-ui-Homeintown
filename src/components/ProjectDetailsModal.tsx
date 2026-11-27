@@ -228,7 +228,7 @@ function Detail({ icon, label, value }: { icon: React.ReactNode; label: string; 
 const m = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   backdropTouch: { ...StyleSheet.absoluteFillObject },
-  sheet: { backgroundColor: '#EAF8EE', borderTopLeftRadius: 26, borderTopRightRadius: 26, height: '90%', overflow: 'hidden' },
+  sheet: { backgroundColor: '#EEF3E9', borderTopLeftRadius: 26, borderTopRightRadius: 26, height: '90%', overflow: 'hidden' },
   scroll: { flex: 1 },
   topBar: { paddingTop: 10, paddingBottom: 4, alignItems: 'center', justifyContent: 'center' },
   grabber: { width: 40, height: 4, borderRadius: 2, backgroundColor: colors.line },
@@ -278,7 +278,7 @@ const m = StyleSheet.create({
 // when the project actually has those CTA numbers).
 // ─────────────────────────────────────────────────────────────────────────────
 const G = {
-  bg: '#EAF8EE', card: '#FFFFFF', green: '#1F4D3A', greenSoft: '#E7F0EA',
+  bg: '#EEF3E9', card: '#FFFFFF', green: '#1F4D3A', greenSoft: '#E7F0EA',
   greenLine: '#C9DCCF', ink: '#1B2420', muted: '#7C847F', line: '#ECE5D8',
 };
 

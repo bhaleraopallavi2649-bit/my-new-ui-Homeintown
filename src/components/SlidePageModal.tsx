@@ -20,7 +20,7 @@ export default function SlidePageModal({
   children,
   transparent = false,
   statusBarTranslucent = true,
-  backgroundColor = '#EAF8EE',
+  backgroundColor = '#EEF3E9',
 }: {
   visible: boolean;
   onRequestClose: () => void;

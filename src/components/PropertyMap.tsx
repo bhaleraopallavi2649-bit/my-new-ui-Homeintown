@@ -332,6 +332,17 @@ export default function PropertyMap({ isAdmin = false, focusProjectId = null }: 
           >
             <View style={[styles.marker, selectedIndex === index && styles.markerActive]}>
               <View style={[styles.markerDot, selectedIndex === index && styles.markerDotActive]} />
+              {activeCategory === FAVOURITES && !!property.property_name && (
+                <Text
+                  style={[styles.markerName, selectedIndex === index && styles.markerNameActive]}
+                  numberOfLines={1}
+                >
+                  {property.property_name.length > 10
+                    ? property.property_name.substring(0, 9) + '…'
+                    : property.property_name}
+                  {' · '}
+                </Text>
+              )}
               <Text style={[styles.markerPrice, selectedIndex === index && styles.markerPriceActive]}>
                 {property.price_short}
               </Text>
@@ -766,7 +777,7 @@ export default function PropertyMap({ isAdmin = false, focusProjectId = null }: 
           the chrome, so the thread must not inset a third time.
           ── */}
       <SlidePageModal visible={!!joinProjectId} onRequestClose={() => setJoinProjectId(null)}>
-        <View style={{ flex: 1, backgroundColor: '#EAF8EE', paddingTop: insets.top }}>
+        <View style={{ flex: 1, backgroundColor: '#EEF3E9', paddingTop: insets.top }}>
           <PageBackdrop />
           <PhotoHeader height={62} photoWidth={200} style={{ gap: 12 }}>
             <Pressable onPress={() => setJoinProjectId(null)} hitSlop={10} accessibilityRole="button" accessibilityLabel="Back to map">
@@ -833,6 +844,9 @@ const styles = StyleSheet.create({
   markerDotActive: { backgroundColor: '#fff' },
   markerPrice: { fontSize: 12, fontWeight: '700', color: '#111827' },
   markerPriceActive: { color: '#fff' },
+  // Favourites-only: property name before the price in the pill
+  markerName: { fontSize: 10, fontWeight: '600', color: '#374151', flexShrink: 1 },
+  markerNameActive: { color: '#E7F0EA' },
 
   // FABs
   fabColumn: { position: 'absolute', bottom: 140, right: 16, gap: 12 },

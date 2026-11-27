@@ -282,7 +282,7 @@ export default function ProfileScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EAF8EE' },
+  root: { flex: 1, backgroundColor: '#EEF3E9' },
 
   // Hero
   hero: { backgroundColor: '#1F4D3A', paddingHorizontal: 18, paddingBottom: 18, overflow: 'hidden', position: 'relative' },

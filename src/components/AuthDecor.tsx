@@ -234,8 +234,8 @@ export function LeafDecor() {
 const APP_BG = require('../../assets/app_bg.png');
 export function PageBackdrop() {
   return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: '#EAF8EE' }]}>
-      <Image source={APP_BG} resizeMode="cover" style={StyleSheet.absoluteFill} />
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: '#EEF3E9' }]}>
+      {/* Artwork (mint waves) dropped: the sage tint is now the plain app background. */}
     </View>
   );
 }
@@ -247,7 +247,7 @@ export function PageBackdropLegacy() {
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id="pbBg" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#EAF8EE" />
+            <Stop offset="0" stopColor="#EEF3E9" />
             <Stop offset="1" stopColor="#EEF3EE" />
           </LinearGradient>
         </Defs>
@@ -297,7 +297,7 @@ export function PhotoHeader({
   photoWidth = 190,
   // Matches the top of PageBackdrop so the photo's fade blends into the page
   // now that the header itself is transparent.
-  fade = '#EAF8EE',
+  fade = '#EEF3E9',
   style,
 }: {
   children: React.ReactNode;

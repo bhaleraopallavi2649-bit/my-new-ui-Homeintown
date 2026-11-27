@@ -852,7 +852,7 @@ export default function QuotationNewScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EAF8EE' },
+  root: { flex: 1, backgroundColor: '#EEF3E9' },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg, paddingVertical: 14, backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: colors.line },
   title: { fontSize: 21, fontWeight: '800', color: QGREEN },
   steps: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.line },

@@ -265,7 +265,7 @@ export default function PropertyGroupInfo({
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EAF8EE' },
+  root: { flex: 1, backgroundColor: '#EEF3E9' },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 36, paddingBottom: 8, paddingHorizontal: 16 },
   topTitle: { fontSize: 17, fontWeight: '800', color: colors.ink },
   hero: { marginHorizontal: 16, height: 120, borderRadius: 16, overflow: 'hidden', backgroundColor: '#E7F0EA' },
@@ -312,7 +312,7 @@ const s = StyleSheet.create({
   actSub: { fontSize: 11.5, color: colors.muted2 },
   // Members sheet
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet: { maxHeight: '70%', backgroundColor: '#EAF8EE', borderTopLeftRadius: 22, borderTopRightRadius: 22, paddingBottom: 20 },
+  sheet: { maxHeight: '70%', backgroundColor: '#EEF3E9', borderTopLeftRadius: 22, borderTopRightRadius: 22, paddingBottom: 20 },
   sheetHead: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 18, paddingTop: 16, paddingBottom: 10 },
   sheetTitle: { fontSize: 16, fontWeight: '800', color: colors.ink },
   sheetSub: { fontSize: 12, color: colors.muted2, marginTop: 2 },

@@ -1008,7 +1008,7 @@ function OptionPills<T extends string>({ label, options, selected, onSelect, all
 const GREEN = '#1F4D3A';
 
 const REF = {
-  board: '#EAF8EE',
+  board: '#EEF3E9',
   boardBorder: '#ECE5D8',
   field: '#FFFFFF',
   fieldBorder: '#ECE5D8',

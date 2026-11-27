@@ -30,7 +30,7 @@ import { colors } from '../../src/theme';
 // Green theme for Create New Project (matches the Home / Properties page).
 const GREEN = '#1F4D3A';
 const GREEN_SOFT = '#E7F0EA';
-const GREEN_BG = '#EAF8EE';
+const GREEN_BG = '#EEF3E9';
 import UnitSetupForm, { UnitSetupDraft, draftToSetup, emptyUnitDraft } from '../../src/components/units/UnitSetupForm';
 import PlotSetupForm, { PlotSetupDraft, emptyPlotDraft, plotDraftToSetup } from '../../src/components/units/PlotSetupForm';
 import { previewUnitSetup, unitModeFor } from '../../src/lib/units';

@@ -253,7 +253,7 @@ const st = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' },
   drawer: {
     position: 'absolute', left: 0, top: 0, bottom: 0,
-    backgroundColor: '#EAF8EE',
+    backgroundColor: '#EEF3E9',
     borderRightWidth: 1, borderRightColor: colors.line,
     shadowColor: '#000', shadowOffset: { width: 4, height: 0 },
     shadowOpacity: 0.15, shadowRadius: 16, elevation: 24,
@@ -273,7 +273,7 @@ const st = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     marginHorizontal: 16, marginTop: 14, marginBottom: 6,
     padding: 12, borderRadius: 14,
-    backgroundColor: '#EAF8EE', borderWidth: 1, borderColor: colors.line,
+    backgroundColor: '#EEF3E9', borderWidth: 1, borderColor: colors.line,
   },
   userAvatar: { width: 44, height: 44, borderRadius: 22 },
   userAvatarFallback: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#1F4D3A', alignItems: 'center', justifyContent: 'center' },

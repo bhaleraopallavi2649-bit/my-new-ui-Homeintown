@@ -221,7 +221,7 @@ export default function AnalyticsScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EAF8EE' },
+  root: { flex: 1, backgroundColor: '#EEF3E9' },
   title: { fontSize: 25, fontWeight: '800', color: colors.ink },
   sub: { fontSize: 13.5, color: '#64718C', marginTop: 1 },
   statsRow: { flexDirection: 'row', gap: 8, justifyContent: 'space-between' },

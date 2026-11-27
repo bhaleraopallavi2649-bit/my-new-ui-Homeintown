@@ -141,13 +141,13 @@ function LmPostMatchToggle({ lmBadge, onPost, onMatch }: {
 const lt = StyleSheet.create({
   track: {
     flexDirection: 'row', marginHorizontal: 12, marginTop: 4, marginBottom: 4,
-    backgroundColor: 'rgba(255,255,255,0.72)', borderRadius: 12,
+    backgroundColor: 'rgba(244,246,241,0.96)', borderRadius: 12,
     borderWidth: 1, borderColor: 'rgba(31,77,58,0.12)',
     overflow: 'hidden', position: 'relative',
   },
   indicator: {
     position: 'absolute', top: 2, bottom: 2, borderRadius: 10,
-    backgroundColor: '#E7F0EA',
+    backgroundColor: '#DCEBD6',
   },
   btn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
@@ -330,6 +330,10 @@ export default function HomeDashboard() {
     <View style={s.root}>
       {/* App-wide mint background behind every tab. */}
       <PageBackdrop />
+      {/* Lead Match only: soft sage / warm off-white tint over the mint backdrop. */}
+      {tab === 'leadmatch' && (
+        <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: '#EEF3E9' }]} />
+      )}
 
       {/* ── Floating header (rounded translucent pill, like the footer) ──
           Absolutely positioned over the content: on Lead Match / My Group /
@@ -698,7 +702,7 @@ const s = StyleSheet.create({
   // in a row. Hardcoded warm hexes here match the reference exactly (lighter
   // than the theme tokens): track #EEF3EE on #DCE5DE, pills #FFFBF5 on #DCE5DE,
   // active fill #E7F0EA on #C9DCCF.
-  tabRow: { paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#EAF8EE' },
+  tabRow: { paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#EEF3E9' },
   // Full-width track so the three pills can be spread evenly across the row (was
   // a horizontal-scroll track sized to its content, which left the pills bunched
   // at the left with empty space on the right).
@@ -775,18 +779,18 @@ const s = StyleSheet.create({
   lmPMBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 7, paddingVertical: 10, borderRadius: 20,
-    backgroundColor: '#F3FBF5', borderWidth: 1, borderColor: 'rgba(31,77,58,0.18)',
+    backgroundColor: '#F1F3EE', borderWidth: 1, borderColor: 'rgba(31,77,58,0.10)',
   },
-  lmPMBtnActive: { backgroundColor: '#1F4D3A', borderColor: '#1F4D3A' },
+  lmPMBtnActive: { backgroundColor: '#DCEBD6', borderColor: '#B9D4B4' },
   lmPMTxt: { fontSize: 13, fontWeight: '700', color: '#1F4D3A' },
-  lmPMTxtActive: { fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
+  lmPMTxtActive: { fontSize: 13, fontWeight: '700', color: '#1F4D3A' },
 
   // ── Tab switcher row (Lead Match · My Group · CRM · Project) ──
   // Sits inside the floating header wrap below the navbar pill.
   tabBtnRow: {
     flexDirection: 'row',
     marginTop: 8,
-    backgroundColor: 'rgba(255,255,255,0.72)',
+    backgroundColor: 'rgba(255,255,255,0.94)',
     borderRadius: 18,
     borderWidth: 1,
     borderColor: 'rgba(31,77,58,0.10)',
@@ -804,7 +808,7 @@ const s = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   tabBtnActive: {
-    backgroundColor: '#E7F0EA',
+    backgroundColor: '#DCEBD6',
   },
   tabBtnLabel: {
     fontSize: 10, fontWeight: '600', color: '#6B8F7B',
@@ -827,7 +831,7 @@ const s = StyleSheet.create({
   },
   // ── Lead Match fixed footer ──
   lmFooter: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F4F7F0',
     borderTopWidth: 1,
     borderTopColor: '#E3E6E4',
     paddingTop: 8,
@@ -840,7 +844,7 @@ const s = StyleSheet.create({
   },
   lmBsrBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
-    backgroundColor: '#F3FBF5', borderRadius: 20, borderWidth: 1, borderColor: '#CFE0D6',
+    backgroundColor: '#FFFFFF', borderRadius: 20, borderWidth: 1, borderColor: '#D5E3D2',
     paddingVertical: 10,
   },
   lmBsrText: { fontSize: 11.5, fontWeight: '700', color: '#1F4D3A', flexShrink: 1 },
@@ -850,11 +854,11 @@ const s = StyleSheet.create({
   lmAttachBtn: {
     width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#F3FBF5', borderWidth: 1, borderColor: '#CFE0D6',
+    backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D5E3D2',
   },
   lmMsgInput: {
     flex: 1, height: 42,
-    backgroundColor: '#F3FBF5', borderRadius: 21, borderWidth: 1, borderColor: '#CFE0D6',
+    backgroundColor: '#FFFFFF', borderRadius: 21, borderWidth: 1, borderColor: '#D5E3D2',
     justifyContent: 'center', paddingHorizontal: 16,
   },
   lmMsgPlaceholder: { fontSize: 13.5, color: '#8A918C' },

@@ -129,3 +129,8 @@ export { default as Wifi } from 'lucide-react-native/dist/esm/icons/wifi';
 export { default as X } from 'lucide-react-native/dist/esm/icons/x';
 export { default as XCircle } from 'lucide-react-native/dist/esm/icons/circle-x';
 export { default as Zap } from 'lucide-react-native/dist/esm/icons/zap';
+export { default as Mic } from 'lucide-react-native/dist/esm/icons/mic';
+export { default as Square } from 'lucide-react-native/dist/esm/icons/square';
+export { default as Play } from 'lucide-react-native/dist/esm/icons/play';
+export { default as Pause } from 'lucide-react-native/dist/esm/icons/pause';
+export { default as Copy } from 'lucide-react-native/dist/esm/icons/copy';

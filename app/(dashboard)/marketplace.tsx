@@ -142,8 +142,8 @@ function HeroDecor({ height }: { height: number }) {
       <Svg width="100%" height={height} style={StyleSheet.absoluteFill}>
         <Defs>
           <SvgGradient id="heroFade" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#EAF8EE" stopOpacity="0" />
-            <Stop offset="1" stopColor="#EAF8EE" stopOpacity="1" />
+            <Stop offset="0" stopColor="#EEF3E9" stopOpacity="0" />
+            <Stop offset="1" stopColor="#EEF3E9" stopOpacity="1" />
           </SvgGradient>
         </Defs>
         <Rect x="0" y={height - 90} width="100%" height="90" fill="url(#heroFade)" />
@@ -179,7 +179,7 @@ function ListingDetailSheet({ listing, onClose }: { listing: MarketplaceListing 
 
   return (
     <Modal visible animationType="slide" presentationStyle="pageSheet" statusBarTranslucent onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: '#EAF8EE' }}>
+      <View style={{ flex: 1, backgroundColor: '#EEF3E9' }}>
         <PageBackdrop />
 
         <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
@@ -820,7 +820,7 @@ export default function MarketplaceScreen({ embedded = false }: { embedded?: boo
 }
 
 const m = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EAF8EE' },
+  root: { flex: 1, backgroundColor: '#EEF3E9' },
   embedActionRow: { flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
   topBar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
   listIconBtn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.brand, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 3 },

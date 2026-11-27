@@ -354,7 +354,7 @@ const MessageBubble = React.memo(function MessageBubble({
       // Warm-port: resting colour is the card's own cream (opaque) instead of a
       // transparent amber, so the reskinned card always reads as a filled cream
       // surface; the amber highlight fades in on top for the scroll-to animation.
-      outputRange: ['rgba(255, 255, 255, 0.78)', 'rgba(231, 240, 234, 0.95)'],
+      outputRange: ['rgba(231, 240, 234, 0)', 'rgba(231, 240, 234, 0.95)'],
     });
 
     // Actions must use the card's stable project id. Falling back to the active
@@ -594,41 +594,52 @@ const MessageBubble = React.memo(function MessageBubble({
 
       // ── UPLOADED PROPERTY CARD (hasGroup) — reference screenshot design ──
       if (hasGroup && !!cardProjectId) {
+        // Uploaded property: right-aligned (own announcements), exact screenshot design.
         return (
-          <Animated.View style={[isMe ? mbs.propCardWrapMe : mbs.propCardWrapThem, { backgroundColor: bgColor }]}>
-            <Pressable onPress={openCard} accessibilityRole="button" accessibilityLabel={`${bubbleName}. Tap to view`}
-              style={[mbs.upCard, isMe && mbs.upCardMe]}>
-              <View style={mbs.upArc} />
+          <Animated.View style={[mbs.upWrap, { backgroundColor: bgColor }]}>
+            <Pressable onPress={openCard} accessibilityRole="button"
+              accessibilityLabel={`${bubbleName}. Tap to view`} style={mbs.upCard}>
+
+              {/* Broker name + blue tick */}
               {!!senderName && senderName !== 'Unknown' && (
                 <View style={mbs.upBrokerRow}>
-                  <Text style={[mbs.upBroker, { color: brokerColor(msg.sender.id || senderName) }]} numberOfLines={1}>{senderName}</Text>
+                  <Text style={mbs.upBroker} numberOfLines={1}>{senderName}</Text>
                   <BadgeCheck size={14} color="#2563EB" />
                 </View>
               )}
+
+              {/* House watermark — decorative, bottom-right */}
+              <HomeIcon size={80} color="rgba(31,77,58,0.09)" style={mbs.upWatermark} />
               {!!bubbleName && <Text style={mbs.upName} numberOfLines={2}>{bubbleName}</Text>}
+
+              {/* Address */}
               {!!bubbleLoc && (
                 <View style={mbs.upLocRow}>
-                  <MapPin size={13} color="#2E8B4F" />
+                  <MapPin size={14} color="#1F4D3A" />
                   <Text style={mbs.upLoc} numberOfLines={1}>{bubbleLoc}</Text>
                 </View>
               )}
+
+              {/* BHK | area */}
               {(!!bubbleBhk || !!areaShown) && (
-                <View style={mbs.upPill}>
-                  <HomeIcon size={13} color="#1F4D3A" />
-                  <Text style={mbs.upPillTxt} numberOfLines={1}>
+                <View style={mbs.upLocRow}>
+                  <BedDouble size={14} color="#1F4D3A" />
+                  <Text style={mbs.upLoc} numberOfLines={1}>
                     {[bubbleBhk, areaShown].filter(Boolean).join('  |  ')}
                   </Text>
                 </View>
               )}
+
+              {/* Price + View Property row */}
               <View style={mbs.upBottomRow}>
                 {!!priceText && <Text style={mbs.upPrice} numberOfLines={1}>{priceText}</Text>}
                 <Pressable
                   onPress={e => { e.stopPropagation?.(); onViewProperty(cardProjectId, inv); }}
                   style={mbs.upViewBtn} hitSlop={8}
-                  accessibilityRole="button" accessibilityLabel="View property"
+                  accessibilityRole="button" accessibilityLabel="View Property"
                 >
-                  <Text style={mbs.upViewTxt}>View property</Text>
-                  <ArrowRight size={14} color="#1F4D3A" />
+                  <HomeIcon size={12} color="#1F4D3A" />
+                  <Text style={mbs.upViewTxt} numberOfLines={1}>View Property</Text>
                 </Pressable>
               </View>
             </Pressable>
@@ -636,11 +647,12 @@ const MessageBubble = React.memo(function MessageBubble({
         );
       }
 
-      // ── POSTED PROPERTY CARD (!hasGroup) — simple layout ──
+      // ── POSTED PROPERTY CARD (!hasGroup) — always white, no green tint ──
+      // isMe posted cards are aligned right but keep white background (not green).
       return (
         <Animated.View style={[isMe ? mbs.propCardWrapMe : mbs.propCardWrapThem, { backgroundColor: bgColor }]}>
           <Pressable onPress={openCard} accessibilityRole="button" accessibilityLabel={`${bubbleName}. Tap to view`}
-            style={[mbs.propCard, isMe && mbs.propCardMe]}>
+            style={mbs.propCard}>
             <View style={mbs.propTwoCol}>
               <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
                 <View style={mbs.propBrokerRow}>
@@ -1054,43 +1066,54 @@ const mbs = StyleSheet.create({
   },
   waViewTxt: { fontSize: 11, fontWeight: '700', color: '#1F4D3A' },
 
-  // ── Uploaded Property card — reference screenshot design ──
+  // ── Uploaded Property card — compact green card with house watermark ──
+  // Right-aligned, soft mint gradient look, house watermark bottom-right.
+  upWrap: { alignSelf: 'flex-end', maxWidth: '94%', width: '94%' },
   upCard: {
-    backgroundColor: '#F4FBF6', borderRadius: 18, borderWidth: 1,
-    borderColor: 'rgba(31,77,58,0.15)', paddingHorizontal: 16,
-    paddingTop: 14, paddingBottom: 14, gap: 7, overflow: 'hidden',
+    backgroundColor: '#E2F0DC',
+    borderRadius: 18,
+    // Thin solid green border around the Uploaded Property card.
+    borderWidth: 1,
+    borderColor: '#86BC96',
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 12,
+    gap: 5,
+    overflow: 'hidden',
   },
-  upCardMe: { borderTopRightRadius: 2, backgroundColor: '#E8F7EC', borderColor: 'rgba(31,77,58,0.20)' },
-  upArc: {
-    position: 'absolute', top: 0, right: 0, width: 60, height: 60, borderRadius: 30,
-    backgroundColor: 'rgba(31,77,58,0.07)', transform: [{ translateX: 24 }, { translateY: -24 }],
+  upWatermark: {
+    position: 'absolute', bottom: 6, right: 10,
   },
   upBrokerRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  upBroker: { fontSize: 13, fontWeight: '700', flexShrink: 1 },
-  upName: { fontSize: 20, fontWeight: '900', color: '#17233A', lineHeight: 26, marginTop: 1 },
-  upLocRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  upLoc: { flexShrink: 1, fontSize: 13, color: '#3D5A47', lineHeight: 17 },
-  upPill: {
-    flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
-    backgroundColor: '#DCF0E3', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, marginTop: 2,
-  },
-  upPillTxt: { fontSize: 13, fontWeight: '600', color: '#1F4D3A' },
-  upBottomRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
-  upPrice: { fontSize: 22, fontWeight: '900', color: '#17233A' },
+  upBroker: { fontSize: 13, fontWeight: '800', color: '#1F4D3A', flexShrink: 1 },
+  // Same font size as Posted cards (propName = 14)
+  upName: { fontSize: 14, fontWeight: '800', color: '#173D2E', lineHeight: 19 },
+  upLocRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  upLoc: { flexShrink: 1, fontSize: 13, color: '#1F4D3A', lineHeight: 18 },
+  upPill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: '#D5E8CE', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, marginTop: 2 },
+  upPillTxt: { fontSize: 12, fontWeight: '600', color: '#1F4D3A' },
+  upBottomRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  upPrice: { fontSize: 16, fontWeight: '900', color: '#173D2E', flexShrink: 1 },
+  // marginLeft:'auto' pins the button to the right corner even when there is no price.
   upViewBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: '#DCF0E3', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8,
+    marginLeft: 'auto', flexShrink: 0,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: '#F8FBF5', borderRadius: 20,
+    borderWidth: 1, borderColor: '#1F4D3A',
+    paddingHorizontal: 10, paddingVertical: 5,
+    zIndex: 2,
   },
-  upViewTxt: { fontSize: 13, fontWeight: '700', color: '#1F4D3A' },
+  upViewTxt: { fontSize: 11, fontWeight: '700', color: '#1F4D3A' },
+  upCardMe: { borderTopRightRadius: 2 },
+  upArc: { position: 'absolute', top: 0, right: 0 },
   // ── Clean wide property card (reference screenshot style) ──
   // Narrower than full width — WhatsApp message look.
   propCardWrapThem: { alignSelf: 'flex-start', maxWidth: '92%', width: '92%' },
   propCardWrapMe: { alignSelf: 'flex-end', maxWidth: '92%', width: '92%' },
   propCardWrap: { alignSelf: 'flex-start', maxWidth: '92%', width: '92%' }, // compat alias
   propCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FDFDFA',
     borderRadius: 14,
-    borderTopLeftRadius: 2, // WhatsApp incoming notch
     borderWidth: 1,
     borderColor: 'rgba(31,77,58,0.13)',
     paddingHorizontal: 12,
@@ -1112,7 +1135,7 @@ const mbs = StyleSheet.create({
   propBadgeTxt: { fontSize: 10, fontWeight: '700', color: '#2E7D52' },
   propBadgeTxtNew: { color: '#B45309' },
   propType: { fontSize: 15, fontWeight: '800', color: '#17233A', lineHeight: 20 },
-  propName: { fontSize: 14, fontWeight: '800', color: '#17233A', lineHeight: 19 },
+  propName: { fontSize: 14, fontWeight: '800', color: '#173D2E', lineHeight: 19 },
   propLocRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   propLoc: { flexShrink: 1, fontSize: 11.5, color: '#3B6648', lineHeight: 16 },
   propTagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginTop: 1 },

@@ -74,7 +74,7 @@ import MessageBubble from './groupChat/MessageBubble';
 import { propertyCardShared } from './groupChat/sharedStyles';
 
 // Green theme for the group LIST (matches the Home / Properties page).
-const GL = { bg: '#EAF8EE', green: '#1F4D3A', greenSoft: '#E7F0EA', line: '#ECE5D8' };
+const GL = { bg: '#EEF3E9', green: '#1F4D3A', greenSoft: '#E7F0EA', line: '#ECE5D8' };
 import { fmtPrice, noop } from '../lib/groupChat/formatting';
 import { cleanAreaText } from '../lib/displayText';
 import { mediaUrls, oneUrl } from '../lib/groupChat/media';
@@ -4272,8 +4272,9 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
 
     let context = '';
     if (activeRoom.roomType === 'builder') {
+      // Verified is shown as a blue tick after the subtitle, not as text.
       context = activeRoom.builder?.isVerified
-        ? 'Verified'
+        ? ''
         : (activeRoom.builder?.role === 'agent' ? 'Agent' : 'Builder');
     } else if (activeRoom.roomType === 'project') {
       context = [proj?.location, proj?.city].filter(Boolean).join(', ') || 'Project group';
@@ -4509,9 +4510,14 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
                 ? `${activeRoom.members.length} members`
                 : roomDisplayName(activeRoom)}
             </Text>
-            <Text style={s.threadSub} numberOfLines={1}>
-              {threadSubtitle}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={[s.threadSub, { flexShrink: 1 }]} numberOfLines={1}>
+                {threadSubtitle}
+              </Text>
+              {!activeRoom.isUniversal && activeRoom.roomType === 'builder' && activeRoom.builder?.isVerified && (
+                <BadgeCheck size={14} color="#1D9BF0" style={{ marginLeft: 4 }} />
+              )}
+            </View>
           </View>
         </Pressable>
 
@@ -4830,7 +4836,7 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
           assistant with that intent already answered, continuing the flow. ── */}
       {/* Buy/Sell/Rent starters: shown in Lead Match feed too (feedOnly with showComposer). */}
       {(!feedOnly || showComposer) && !aiActive && aiAllowed && (
-        <View style={ip.stripWrap}>
+        <View style={[ip.stripWrap, feedOnly && { backgroundColor: 'transparent' }]}>
           {/* Warm-port had a "Shuru Karein — Tap Karein" promo banner card (Target
               icon + HeaderPhoto + subtitle) above these three option cards. The
               user asked for that banner removed, so only the Buy/Sell/Rent cards
@@ -4867,7 +4873,7 @@ export default function GroupChatEmbedded({ onRoomOpenChange, topInset = 0, auto
           locked state. Without this gate the rich control and this composer both
           showed, giving two stacked input rows. */}
       {!composerHidden && !(aiActive && aiOwnsInput({ inputType: aiInputType })) && (
-      <View style={s.composer}>
+      <View style={[s.composer, feedOnly && { backgroundColor: 'transparent', borderTopColor: 'transparent' }]}>
         {!!visitState && !aiActive && (
           <View style={s.visitBanner}>
             <MapPin size={14} color="#0E7490" />
@@ -6614,7 +6620,7 @@ const s = StyleSheet.create({
   // for fully transparent trees.
   qrExporter: { position: 'absolute', left: -1000, top: -1000, width: 352, height: 352, padding: 16, backgroundColor: '#fff' },
 
-  composer: { backgroundColor: '#EAF8EE', borderTopWidth: 1, borderTopColor: '#ECE5D8', paddingHorizontal: 12, paddingTop: 10, paddingBottom: 12, gap: 10 },
+  composer: { backgroundColor: '#EEF3E9', borderTopWidth: 1, borderTopColor: '#ECE5D8', paddingHorizontal: 12, paddingTop: 10, paddingBottom: 12, gap: 10 },
   quickRow: { flexDirection: 'row', gap: 8 },
   aiInlineBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 10, backgroundColor: colors.brandTint, borderBottomWidth: 1, borderBottomColor: `${colors.brand}33` },
   aiBackBtn: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 14, backgroundColor: colors.white, borderWidth: 1, borderColor: `${colors.brand}33` },

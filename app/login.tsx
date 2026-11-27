@@ -39,7 +39,7 @@ const SERIF = Platform.select({
 const O = {
   primary: '#1F4D3A',     // primary dark green (button / logo / icons)
   deep: '#173D2E',        // deep green (pressed / accents)
-  cream: '#EAF8EE',       // page background: mint (same as the app background)
+  cream: '#EEF3E9',       // page background: mint (same as the app background)
   cardCream: '#F6FAF7',   // card / input fill: green-tinted white
   beige: '#C8DDD2',       // card border: soft green
   white: '#FFFFFF',

@@ -962,7 +962,7 @@ export default function ProjectsScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EAF8EE' },
+  root: { flex: 1, backgroundColor: '#EEF3E9' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingHorizontal: 16, paddingVertical: 12 },
   title: { fontSize: 24, fontWeight: '800', color: colors.ink },
   sub: { fontSize: 12.5, color: colors.muted2, fontWeight: '600', marginTop: 1 },

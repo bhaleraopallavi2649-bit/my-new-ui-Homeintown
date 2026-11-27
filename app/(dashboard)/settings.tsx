@@ -108,7 +108,7 @@ export default function SettingsScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EAF8EE' },
+  root: { flex: 1, backgroundColor: '#EEF3E9' },
   backBtn: { width: 34, padding: 2 },
   title: { flex: 1, textAlign: 'center', fontSize: 24, fontWeight: '800', color: colors.ink },
   card: {

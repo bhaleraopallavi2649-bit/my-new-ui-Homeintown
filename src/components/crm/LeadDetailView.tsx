@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronDown, Trash2, Plus, X, Image as ImageIcon, Video as
 import { useAuth } from '../../lib/authContext';
 import { waUrl } from '../../lib/phone';
 import { useToast } from '../Toast';
+import LeadAudioGuide from './LeadAudioGuide';
 import { DemoLead, stageColor, leadTypeColor } from './HumanLeadManager';
 import {
   ProjectAsset, humanLeadsApi, MatchedProperty, LeadMatchesResponse, LeadStage,
@@ -447,6 +448,17 @@ export default function LeadDetailView({ lead, onBack, stages, onStageChange, pr
           {journeyType === 'outbound' && 'Outbound rasta 30+ din. Cold leads — trust build karo pehle.'}
           {journeyType === 'ai' && 'AI-assisted — fastest close ~15 din.'}
         </Text>
+
+        {journeyType === 'ai' && (
+          <LeadAudioGuide
+            leadId={lead.id}
+            leadName={lead.name}
+            lead={{
+              name: lead.name, project: lead.project, stage: lead.stage, budget: lead.budget,
+              homeType: lead.homeType, location: lead.location, buyingType: lead.buyingType,
+            }}
+          />
+        )}
 
         {/* Stages - Show only current stage */}
         <View style={{ gap: 8 }}>

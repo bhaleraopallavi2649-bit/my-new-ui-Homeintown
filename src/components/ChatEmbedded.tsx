@@ -49,7 +49,7 @@ const LINE = '#ECE5D8';
 // Green theme (matches the Home / Properties page).
 const GREEN = '#1F4D3A';
 const GREEN_SOFT = '#E7F0EA';
-const GREEN_BG = '#EAF8EE';
+const GREEN_BG = '#EEF3E9';
 
 // Module-level so FlatList sees one stable component type instead of a new one
 // on every parent render. Was a hairline divider; the reskin uses spaced cream

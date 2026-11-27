@@ -28,7 +28,8 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.INTERNET",
-        "android.permission.VIBRATE"
+        "android.permission.VIBRATE",
+        "android.permission.RECORD_AUDIO"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#B45309"
@@ -51,6 +52,12 @@
         "expo-image-picker",
         {
           "photosPermission": "HomeInTown needs photo access to upload references to leads."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "HomeInTown needs microphone access to record client conversations for AI analysis."
         }
       ],
       "expo-asset",

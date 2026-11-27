@@ -827,7 +827,7 @@ const hub = StyleSheet.create({
   bannerOptText: { fontSize: 9.5, fontWeight: '700', color: HG_GREEN },
   bannerBadge: { position: 'absolute', top: -6, right: -9, minWidth: 15, height: 15, borderRadius: 8, paddingHorizontal: 3, backgroundColor: '#E0475B', alignItems: 'center', justifyContent: 'center' },
   bannerBadgeText: { fontSize: 8.5, fontWeight: '800', color: '#fff' },
-  backBar: { paddingHorizontal: 10, paddingVertical: 8, backgroundColor: '#EAF8EE', borderBottomWidth: 1, borderBottomColor: '#ECE5D8' },
+  backBar: { paddingHorizontal: 10, paddingVertical: 8, backgroundColor: '#EEF3E9', borderBottomWidth: 1, borderBottomColor: '#ECE5D8' },
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start' },
   backText: { fontSize: 15, fontWeight: '700', color: HG_GREEN },
   // Green circular icon button used in the Groups filter row.
